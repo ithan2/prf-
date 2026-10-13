@@ -1,0 +1,1041 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Área de Estudo PRF</title>
+<style>
+/* Layout: cabeçalho fixo com abas; quatro telas (Início, Disciplinas, Treino, Materiais). Progresso e anotações ficam salvos no navegador do aluno.
+   Identidade herdada do Jardim de Maria: creme, verde-floresta, dourado, títulos em Georgia. */
+:root{
+  --bg:#f6f2e9;--card:#fffdf8;--ink:#20332c;--muted:#66746c;--line:#e4dfd2;
+  --brand:#174638;--brand-ink:#f6f2e9;--gold:#b28a42;--soft:#eef1e8;--alert:#a84545;--ok:#2f7a55;
+  --shadow:0 16px 45px rgba(35,47,41,.09);
+  --display:Georgia,"Times New Roman",serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1b17;--card:#172720;--ink:#f2eee4;--muted:#acb9b0;--line:#2e4238;
+  --brand:#d8eadf;--brand-ink:#0f1b17;--gold:#d0aa61;--soft:#21362c;--alert:#ef8d8d;--ok:#7fd1a4;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1b17;--card:#172720;--ink:#f2eee4;--muted:#acb9b0;--line:#2e4238;
+  --brand:#d8eadf;--brand-ink:#0f1b17;--gold:#d0aa61;--soft:#21362c;--alert:#ef8d8d;--ok:#7fd1a4;--shadow:none;color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);padding-inline:max(16px,env(safe-area-inset-left,0px))}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.12}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--gold) 75%,transparent);outline-offset:3px}
+.wrap{max-width:1120px;margin-inline:auto}
+.kicker{font-size:11px;letter-spacing:.19em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* topo */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.top .in{max-width:1120px;margin-inline:auto;display:flex;align-items:center;gap:16px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:11px;flex:none}
+.seal{width:36px;height:43px;border:1px solid var(--gold);border-radius:20px 20px 7px 7px;display:grid;place-items:center;font:700 12px/1 var(--display);color:var(--gold)}
+.brand b{display:block;letter-spacing:.18em;font-size:12px}
+.brand small{display:block;color:var(--muted);font-size:9.5px;letter-spacing:.11em}
+.tabs{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;border:0;background:transparent;color:var(--muted);border-radius:999px;padding:9px 16px;font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--soft);color:var(--ink);font-weight:700}
+.iconBtn{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:16px}
+
+.view{display:none;padding-block:34px 70px}
+.view.on{display:block}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;margin-bottom:22px}
+.head h1,.head h2{font-size:clamp(28px,4.4vw,44px);margin-top:8px}
+.head p{max-width:48ch;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:11px 20px;font-weight:700;text-decoration:none;border:1px solid var(--brand);background:transparent;color:var(--brand)}
+.btn.primary{background:var(--brand);color:var(--brand-ink)}
+.btn.off{border-style:dashed;border-color:var(--line);color:var(--muted);pointer-events:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;min-width:0}
+.bar{height:8px;border-radius:8px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:8px;transition:width .3s}
+.bar.ok i{background:var(--ok)}
+
+/* início */
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:34px;align-items:center;margin-bottom:26px}
+.hero h1{font-size:clamp(34px,5.2vw,56px);margin-block:12px 14px}
+.hero .lead{font-size:17px;color:var(--muted);max-width:50ch;margin-bottom:22px}
+.heroImg{width:100%;max-height:340px;object-fit:cover;border-radius:22px;box-shadow:var(--shadow)}
+.stack{position:relative;height:300px;max-width:330px;width:100%;margin-inline:auto}
+.stack::before{content:"";position:absolute;inset:-6% 0;background:radial-gradient(circle,color-mix(in srgb,var(--gold) 14%,transparent),transparent 65%)}
+.fi{position:absolute;left:8%;right:8%;top:6%;height:84%;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:10px}
+.fi.a{transform:rotate(-7deg) translate(-12px,8px);background:var(--soft)}
+.fi.b{transform:rotate(5deg) translate(10px,3px)}
+.fi.c{transform:rotate(-1deg);border-color:var(--gold)}
+.fi .tg{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.fi h3{font-size:20px}
+.fi .pg{border:1.5px dashed var(--alert);border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.4}
+.fi .pg b{display:block;color:var(--alert);font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+.fi .sl{margin-top:auto;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+
+.dash{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px}
+.big{font:700 clamp(44px,7vw,68px)/1 var(--display);color:var(--brand)}
+.big small{font:600 15px var(--body);color:var(--muted);margin-left:6px}
+.dash .card{display:grid;gap:12px;align-content:start}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field input{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;min-width:0}
+.field input[type=number]{width:90px}
+.days b{font:700 44px/1 var(--display);color:var(--brand)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:172px;position:relative;margin-top:22px}
+.week .col{display:grid;grid-template-rows:148px 20px;justify-items:center;min-width:0}
+.week .tr{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:100%;height:148px;gap:2px}
+.week .col i{display:block;width:100%;max-width:34px;border-radius:8px 8px 3px 3px;background:var(--gold);min-height:3px}
+.week .col i.hit{background:var(--ok)}
+.week .col span{font-size:11px;color:var(--muted)}
+.week .col em{font-style:normal;font-size:11px;font-weight:700}
+.goalLine{position:absolute;left:0;right:0;border-top:1.5px dashed var(--muted);opacity:.6;pointer-events:none}
+.goalLine span{position:absolute;left:0;top:-18px;font-size:10px;color:var(--muted)}
+.list{display:grid;gap:8px}
+.jump{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 14px}
+.jump small{color:var(--muted)}
+
+/* disciplinas */
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.tools input{flex:1 1 220px;min-width:0;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:11px 18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.disc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:12px;min-width:0;align-content:start}
+.disc.weak{border-color:var(--alert)}
+.disc .t{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.disc h3{font-size:20px}
+.st{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.st.ok{color:var(--ok)}
+.cnt{display:flex;align-items:baseline;justify-content:space-between}
+.cnt b{font:700 26px/1 var(--display);color:var(--brand)}
+.cnt span{font-size:13px;color:var(--muted)}
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.sm{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 12px;font-weight:700;font-size:13px}
+.sm:hover{border-color:var(--gold)}
+.sm.on{background:var(--alert);border-color:var(--alert);color:#fff}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600}
+details textarea{width:100%;margin-top:8px;min-height:84px;resize:vertical;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px;grid-column:1/-1}
+
+/* treino */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.trk{display:grid;gap:14px;align-content:start}
+.trk h3{font-size:25px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pair label{display:grid;gap:5px;font-size:12px;color:var(--muted);font-weight:600}
+.pair input{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:18px;font-weight:700;min-width:0;width:100%}
+.pct{font:700 40px/1 var(--display)}
+.pill{align-self:start;justify-self:start;border:1px solid var(--gold);color:var(--gold);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 11px}
+
+/* materiais */
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.mat{display:grid;gap:12px;align-content:start}
+.mat.main{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.mat.main .kicker{color:color-mix(in srgb,var(--brand-ink) 70%,var(--gold))}
+.mat h3{font-size:26px}
+.mat ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14.5px}
+.mat .btn{justify-self:start;margin-top:6px}
+.mat.main .btn{border-color:var(--brand-ink);color:var(--brand-ink)}
+.mat.main .btn.primary{background:var(--brand-ink);color:var(--brand)}
+.mat.main .btn.off{color:color-mix(in srgb,var(--brand-ink) 65%,transparent);border-color:color-mix(in srgb,var(--brand-ink) 35%,transparent)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;margin-top:30px;background:var(--soft);border-radius:24px;padding:clamp(20px,3.5vw,34px)}
+.how h3{font-size:19px;margin-bottom:6px}
+.how p{font-size:14px;color:var(--muted)}
+.galHead{margin-top:44px}
+.galTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.fcard{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:10px;display:grid;gap:10px;text-align:left;min-width:0}
+.fcard:hover{border-color:var(--gold)}
+.fcard img{width:100%;aspect-ratio:1000/1416;object-fit:cover;object-position:top;border-radius:10px;display:block;background:var(--soft)}
+.fcard>span b{font:700 15px/1.25 var(--display)}
+.fcard>span small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.fan{position:relative;height:400px;max-width:420px;width:100%;margin-inline:auto}
+.fan::before{content:"";position:absolute;inset:-4% 0;background:radial-gradient(circle,color-mix(in srgb,var(--gold) 16%,transparent),transparent 65%)}
+.fan img{position:absolute;top:14px;width:54%;aspect-ratio:1000/1416;object-fit:cover;border-radius:12px;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--card)}
+.fan .l{left:0;transform:rotate(-8deg);top:30px}
+.fan .r{right:0;transform:rotate(8deg);top:30px}
+.fan .m{left:23%;z-index:2;transform:rotate(-1deg)}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.thumbs button{flex:none;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:0;overflow:hidden;width:64px}
+.thumbs button:hover{border-color:var(--gold)}
+.thumbs img{display:block;width:100%;aspect-ratio:1000/1416;object-fit:cover;object-position:top}
+.thumbs small{align-self:center;color:var(--muted);font-size:12px;flex:none;padding-left:4px}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(8,14,12,.97);display:none;flex-direction:column;align-items:center;padding:max(14px,env(safe-area-inset-top,0px)) 14px max(14px,env(safe-area-inset-bottom,0px))}
+.lb.on{display:flex}
+.lb .bar2{width:100%;max-width:900px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#f2eee4;padding-bottom:10px}
+.lb .bar2 b{font:700 17px var(--display)}
+.lb .bar2 small{display:block;opacity:.7;font-size:12px}
+.lb .btns{display:flex;gap:8px;flex:none}
+.lb .btns button{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#f2eee4;font-size:18px}
+.lb .pic{flex:1;min-height:0;width:100%;max-width:900px;overflow:auto;text-align:center}
+.lb img{max-width:100%;max-height:100%;border-radius:10px;background:#fff}
+.reset{margin-top:34px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.reset button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-size:13px}
+.reset button.danger{border-color:var(--alert);color:var(--alert)}
+
+footer{border-top:1px solid var(--line);padding-block:24px 40px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;color:var(--muted);font-size:13px}
+
+@media (max-width:860px){
+  .hero,.dash,.two,.row2{grid-template-columns:1fr}
+  .brand small{display:none}
+}
+@media (max-width:420px){.pair{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar i{transition:none}}
+
+/* ===== Caderno de questões (HTML) — visual das páginas do caderno em PDF: faixa azul-marinho, filete dourado, cartões com borda dourada ===== */
+.cad{--cbg:#f5f7fb;--ccard:#fff;--cink:#102a47;--cmut:#5b6b80;--cgold:#e5b94f;--cnum:#6b4f1d;--cok:#1b7a62;--cerr:#a33a48;--cnavy:#102c4c;--cline:#dde3ee;
+  border-radius:22px;overflow:hidden;background:var(--cbg);color:var(--cink);border:1px solid var(--cline)}
+:root[data-theme="dark"] .cad{--cbg:#0c1522;--ccard:#14243a;--cink:#e8eef7;--cmut:#9fb0c6;--cnum:#e5b94f;--cnavy:#13294a;--cline:#25395a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cad{--cbg:#0c1522;--ccard:#14243a;--cink:#e8eef7;--cmut:#9fb0c6;--cnum:#e5b94f;--cnavy:#13294a;--cline:#25395a}}
+.cadHead{background:var(--cnavy);color:#fff;padding:22px clamp(16px,4vw,40px) 26px;border-bottom:5px solid var(--cgold)}
+.cadTop{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.cadTop b{font-weight:700}.cadTop span{opacity:.85}
+.cadHead h2{font:700 clamp(28px,5vw,44px)/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;margin:22px 0 14px;color:#fff}
+.cadSub{color:var(--cgold);font-size:12px;letter-spacing:.07em;font-weight:700;text-transform:uppercase}
+.cadNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px clamp(16px,4vw,40px);border-bottom:1px solid var(--cline);background:var(--cbg)}
+.cadNav button{border:1px solid var(--cline);background:var(--ccard);color:var(--cink);border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.cadNav button[aria-pressed="true"]{background:var(--cnavy);border-color:var(--cnavy);color:#fff}
+.cadNav .sp{flex:1}
+.cadNav .prog{font-size:13px;color:var(--cmut)}
+.cadBody{padding:clamp(14px,3vw,30px) clamp(12px,4vw,40px) 34px;display:grid;gap:18px}
+/* índice */
+.cadRows{display:grid;gap:8px}
+.cadRow{display:grid;grid-template-columns:34px 1fr auto auto;gap:12px;align-items:center;width:100%;text-align:left;background:var(--ccard);border:1px solid var(--cline);border-radius:14px;padding:14px 16px;color:var(--cink)}
+.cadRow:hover{border-color:var(--cgold)}
+.cadRow i{font:700 13px system-ui;color:var(--cmut);font-style:normal}
+.cadRow b{font-size:17px}
+.cadRow small{color:var(--cmut);font-size:13px}
+.cadRow em{font:700 15px system-ui;font-style:normal;min-width:64px;text-align:right}
+.cadRow.off{opacity:.55;cursor:default}
+.cadRow.off:hover{border-color:var(--cline)}
+.cadNote{font-size:13px;color:var(--cmut);line-height:1.55;border-top:1px solid var(--cline);padding-top:14px}
+/* cartão de questão */
+.qc{background:var(--ccard);border-left:6px solid var(--cgold);border-radius:6px 18px 18px 6px;padding:22px clamp(16px,3vw,28px) 18px;display:grid;gap:12px;min-width:0}
+.qh{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.qh .n{font:700 28px/1 system-ui;color:var(--cnum)}
+.qh h3{font:700 clamp(19px,2.6vw,24px)/1.2 system-ui;color:var(--cink)}
+.qh .tag{margin-left:auto;font-size:11px;letter-spacing:.07em;font-weight:700;text-transform:uppercase;color:var(--cnum);border:1px solid var(--cgold);border-radius:999px;padding:3px 10px}
+.qm{font-size:13px;color:var(--cmut)}
+.qa{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.qx{font-size:15px;color:var(--cmut)}
+.qs{font-size:clamp(16px,2.1vw,18px);line-height:1.6}
+.qs.ce{font-weight:700}
+.alts{display:grid;gap:8px}
+.alt{display:grid;grid-template-columns:26px 1fr;gap:6px;text-align:left;width:100%;border:1.5px solid var(--cline);background:transparent;color:var(--cink);border-radius:12px;padding:11px 14px;font-size:16px;line-height:1.5}
+.alt b{font-weight:800}
+.alt:not(:disabled):hover{border-color:var(--cnavy)}
+.alt:disabled{cursor:default}
+.alt.sel{border-color:var(--cnavy);background:color-mix(in srgb,var(--cnavy) 8%,transparent)}
+.alt.right{border-color:var(--cok);background:color-mix(in srgb,var(--cok) 12%,transparent)}
+.alt.wrong{border-color:var(--cerr);background:color-mix(in srgb,var(--cerr) 10%,transparent)}
+.ceBtns{display:flex;gap:10px;flex-wrap:wrap}
+.ceBtns button{min-width:130px;border:1.5px solid var(--cline);background:transparent;color:var(--cink);border-radius:999px;padding:11px 22px;font-weight:800;letter-spacing:.05em;font-size:14px;text-transform:uppercase}
+.ceBtns button:not(:disabled):hover{border-color:var(--cnavy)}
+.ceBtns button:disabled{cursor:default}
+.ceBtns button.right{border-color:var(--cok);background:color-mix(in srgb,var(--cok) 12%,transparent)}
+.ceBtns button.wrong{border-color:var(--cerr);background:color-mix(in srgb,var(--cerr) 10%,transparent)}
+.qr{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.pillc{display:inline-block;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:10px 22px;min-width:130px}
+.pillc.ok{background:var(--cok)}.pillc.err{background:var(--cerr)}.pillc.mc{background:var(--cnavy)}
+.qr .lbl{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--cmut)}
+.qr .res{font-size:14px;font-weight:700}
+.qr .res.ok{color:var(--cok)}.qr .res.err{color:var(--cerr)}
+.qcom{font-size:16px;line-height:1.6}
+.qref{font-size:13px;color:var(--cmut)}
+.qf{display:flex;gap:10px 24px;flex-wrap:wrap;align-items:center;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--cink);margin-top:2px}
+.qf .r{margin-left:auto}
+.qf button{border:1px solid var(--cline);background:transparent;color:var(--cink);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.qhint{font-size:13px;color:var(--cmut)}
+/* gabarito */
+.gab{display:grid;gap:6px}
+.gb{display:grid;grid-template-columns:62px 1fr auto 28px;gap:12px;align-items:center;background:var(--ccard);border:1px solid var(--cline);border-radius:12px;padding:10px 14px;font-size:15px}
+.gb b.n{font:700 17px system-ui;color:var(--cnum)}
+.gb small{color:var(--cmut)}
+.gb .a{font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#fff;border-radius:999px;padding:5px 12px;text-align:center;min-width:104px}
+.gb .a.ok{background:var(--cok)}.gb .a.err{background:var(--cerr)}.gb .a.mc{background:var(--cnavy)}
+.gb .s{font-weight:800;text-align:center}.gb .s.ok{color:var(--cok)}.gb .s.err{color:var(--cerr)}
+.cadBack{justify-self:start}
+@media (max-width:560px){
+  .cadRow{grid-template-columns:28px 1fr auto}.cadRow small{display:none}
+  .gb{grid-template-columns:54px 1fr auto 22px}.gb .a{min-width:0;padding:5px 9px}
+  .qh .tag{margin-left:0}
+}
+/* fichas feitas em HTML/CSS (sem imagem) — estilo das fichas ilustradas: paleta fixa, igual às imagens */
+.fh{container-type:inline-size;aspect-ratio:1000/1416;background:linear-gradient(160deg,#fffdf4 0%,#fff6dc 100%);border:1px solid #e7dfc4;border-radius:12px;display:grid;color:#14284b;text-align:left;width:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.fh .fhi{display:flex;flex-direction:column;gap:2.6cqw;padding:6cqw 6cqw 4.6cqw;min-width:0}
+.fh *{box-sizing:border-box}
+.fh .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:3cqw}
+.fh h4{margin:0;font:900 8.8cqw/1.02 system-ui,-apple-system,"Segoe UI",sans-serif;text-transform:uppercase;letter-spacing:-.02em;color:#14284b}
+.fh .bd{flex:none;width:15cqw;aspect-ratio:.86;background:#e5b94f;clip-path:polygon(0 0,100% 0,100% 64%,50% 100%,0 64%);padding:.8cqw}
+.fh .bd div{width:100%;height:100%;background:#14284b;clip-path:polygon(0 0,100% 0,100% 64%,50% 100%,0 64%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3cqw;color:#fff;font-size:1.5cqw;font-weight:800;text-align:center;line-height:1.1;padding-bottom:2cqw}
+.fh .bd b{font:900 5cqw/1 system-ui,sans-serif;color:#f5b82e}
+.fh .bd i{font-style:normal;background:#2e9e5b;border-radius:1cqw;padding:.2cqw 1.4cqw;font-size:2.4cqw;font-weight:800}
+.fh .sub{align-self:flex-start;background:#fbe38a;border-radius:1.4cqw;padding:1cqw 2.4cqw;font-size:3.5cqw;font-weight:800}
+.fh .intro{background:#d7e8fb;border:.35cqw solid #b9d4f2;border-radius:2.4cqw;padding:2.6cqw 3.2cqw;font-size:3.8cqw;line-height:1.35;font-weight:500}
+.fh .sec{align-self:flex-start;font-size:3.2cqw;font-weight:900;letter-spacing:.04em;text-transform:uppercase;border-radius:1.4cqw;padding:.9cqw 2.4cqw;background:#d7e8fb}
+.fh .sec.y{background:#fbe38a}
+.fh .grid2{display:grid;grid-template-columns:1fr 1fr;gap:2.2cqw}
+.fh .grid2.one{grid-template-columns:1fr}
+.fh .c{background:#fff;border:.4cqw solid #14284b;border-radius:2.2cqw;padding:2.2cqw 2.8cqw;font-size:3.5cqw;line-height:1.3;min-width:0}
+.fh .c b{display:block;color:#d62839;font-size:4.2cqw;font-weight:900;margin-bottom:.6cqw}
+.fh .pg{border:.4cqw dashed #d62839;border-radius:2.4cqw;padding:2.4cqw 3cqw;font-size:3.6cqw;line-height:1.35;background:#fff}
+.fh .pg b{display:block;color:#d62839;font-size:3.6cqw;font-weight:900;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.6cqw}
+.fh .fim{display:flex;gap:2.6cqw;align-items:center;background:#fbe38a;border:.4cqw solid #e7c24a;border-radius:2.4cqw;padding:2.6cqw 3cqw;font-size:3.8cqw;line-height:1.3;font-weight:800}
+.fh .fim:before{content:"✓";flex:none;width:7cqw;height:7cqw;border-radius:50%;background:#2e9e5b;color:#fff;display:grid;place-items:center;font-size:4.4cqw;font-weight:900}
+.fh .ft{margin-top:auto;display:flex;justify-content:space-between;gap:3cqw;border-top:.4cqw solid #14284b;padding-top:1.8cqw;font-size:2.6cqw;line-height:1.3;color:#3a4a66}
+.thumbs .fh{border:0;border-radius:0;pointer-events:none}
+.fcard{grid-template-columns:minmax(0,1fr);align-content:start}
+.fcard .fh,.thumbs .fh{overflow:hidden;height:auto;min-width:0;pointer-events:none}
+.gal{align-items:start}
+.lb #lbH .fh{width:min(100%,640px);margin-inline:auto}
+
+/* ===== melhorias de navegação e visual ===== */
+.tabs button{transition:background .15s,color .15s}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--gold)}
+.card,.disc{transition:border-color .15s,box-shadow .15s}
+.card:hover,.disc:hover{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.btn{transition:transform .12s,background .15s}.btn:hover{transform:translateY(-1px)}
+.hero{background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 11%,transparent),transparent 62%);border-radius:28px;padding:clamp(18px,4vw,38px)}
+.gsWrap{position:relative;margin-bottom:18px}
+.gsWrap:before{content:"🔍";position:absolute;left:20px;top:14px;font-size:17px;pointer-events:none}
+.gsWrap input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:15px 22px 15px 52px;font-size:16px;box-shadow:var(--shadow)}
+.gsWrap input:focus{border-color:var(--gold);outline:0}
+.gsOut{margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px;display:grid;gap:2px;box-shadow:var(--shadow);max-height:60vh;overflow:auto}
+.gsr{display:grid;grid-template-columns:84px 1fr auto;gap:10px;align-items:center;text-align:left;border:0;background:transparent;border-radius:12px;padding:10px 12px}
+.gsr:hover{background:var(--soft)}
+.gsr i{font:700 10px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-style:normal}
+.gsr small{color:var(--muted)}
+.gsm{padding:8px 12px;font-size:13px}
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px}
+.qt{display:grid;gap:3px;justify-items:start;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:18px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.qt:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:var(--shadow)}
+.qt .ic{width:46px;height:46px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:24px;margin-bottom:8px}
+.qt b{font:700 18px var(--display)}
+.qt small{color:var(--muted);font-size:13px}
+.cadChips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.cc{flex:none;border:1px solid var(--cline);background:var(--ccard);color:var(--cink);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700}
+.cc small{color:var(--cmut);margin-left:4px}
+.cc[aria-pressed="true"]{background:var(--cnavy);border-color:var(--cnavy);color:#fff}
+.cc[aria-pressed="true"] small{color:#e5b94f}
+.bnav{display:none}
+@media (max-width:700px){
+  .tabs{display:none}.top .in{justify-content:space-between}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bnav button{border:0;background:transparent;display:grid;gap:1px;justify-items:center;font-size:11px;font-weight:600;color:var(--muted);padding:6px 0;border-radius:12px}
+  .bnav button span{font-size:20px;line-height:1.1}
+  .bnav button[aria-selected="true"]{color:var(--brand);background:var(--soft);font-weight:700}
+  body{padding-bottom:84px}
+  .gsr{grid-template-columns:70px 1fr}.gsr small{display:none}
+  .hero{padding:0;background:none}
+}
+
+/* disciplinas: card novo */
+.disc{border-top:4px solid var(--soft);padding:20px;gap:14px}
+.disc.go{border-top-color:var(--gold)}.disc.ok{border-top-color:var(--ok)}.disc.weak{border-top-color:var(--alert)}
+.dact{display:grid;gap:8px}
+.dq{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);border-radius:14px;padding:12px 15px;font-weight:700;text-align:left}
+.dq small{opacity:.8;font-weight:600}
+.dq.off{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.dsec{display:grid;gap:8px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;text-align:left}
+.fchip:before{content:"📄 "}.fchip:hover{border-color:var(--gold)}
+/* treino */
+.tstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.ts{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:4px}
+.ts b{font:700 34px/1 var(--display);color:var(--brand)}
+.ts span{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.tgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:30px}
+.pr{display:grid;grid-template-columns:1fr auto;gap:5px 10px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:10px 2px}
+.pr:last-child{border-bottom:0}.pr:hover b{color:var(--gold)}
+.pr .bar{grid-column:1/-1}.pr em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.pr .bar i.g{background:var(--ok)}.pr .bar i.r{background:var(--alert)}
+.sim{display:grid;gap:12px;align-content:start}
+.sim label{display:grid;gap:5px;font-size:12px;font-weight:700;color:var(--muted)}
+.sim select{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 12px;font-size:15px;color:var(--ink)}
+.sim .msg{font-size:13px;color:var(--alert)}
+@media (max-width:860px){.tgrid{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <header class="top"><div class="in">
+    <div class="brand"><div class="seal">PRF</div><div><b>ADHANCE</b><small>REVISÃO DE CONCURSOS</small></div></div>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button role="tab" data-view="inicio">Início</button>
+      <button role="tab" data-view="caderno">Questões</button>
+      <button role="tab" data-view="disciplinas">Disciplinas</button>
+      <button role="tab" data-view="treino">Treino</button>
+      <button role="tab" data-view="materiais">Materiais</button>
+    </nav>
+    <button class="iconBtn" id="sBtn" aria-label="Buscar" title="Buscar (tecla /)">🔍</button>
+    <button class="iconBtn" id="themeBtn" aria-label="Alternar tema">☾</button>
+  </div></header>
+
+  <!-- INÍCIO -->
+  <main>
+  <section class="view" id="inicio">
+    <div class="hero">
+      <div>
+        <div class="kicker">PRF 2027 · Sua área de estudo</div>
+        <h1>Revise as fichas e acompanhe o que falta.</h1>
+        <p class="lead">Marque as fichas que você já revisou, sinalize os pontos fracos e defina uma meta por dia. Tudo fica salvo neste navegador.</p>
+        <div class="field"><button class="btn primary" data-go="disciplinas">Continuar revisando →</button><button class="btn" data-go="materiais">Abrir os PDFs</button></div>
+      </div>
+      <div id="heroArt"></div>
+    </div>
+
+    <div class="gsWrap"><input id="gs" type="search" placeholder="Buscar fichas, questões ou disciplinas…" autocomplete="off" aria-label="Busca geral"><div id="gsOut" class="gsOut" hidden></div></div>
+    <div class="quick" id="quick"></div>
+
+    <div class="dash">
+      <div class="card">
+        <div class="kicker">Coleção principal</div>
+        <div class="big num"><span id="tot">0</span><small>de 1.811 fichas revisadas</small></div>
+        <div class="bar" id="totBar"><i style="width:0"></i></div>
+        <p class="muted" id="totTxt"></p>
+      </div>
+      <div class="card">
+        <div class="kicker">Prova</div>
+        <div class="days" id="daysBox"></div>
+        <div class="field"><input type="date" id="exam" aria-label="Data da prova"><span class="muted" style="font-size:13px">Informe a data da sua prova.</span></div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="card">
+        <div class="kicker">Últimos 7 dias</div>
+        <div class="field" style="justify-content:space-between;margin-top:6px">
+          <h3 style="font-size:22px">Fichas por dia</h3>
+          <label class="field" style="gap:8px"><span class="muted" style="font-size:13px">Meta diária</span><input type="number" id="goal" min="1" max="500" inputmode="numeric"></label>
+        </div>
+        <div class="week" id="week"></div>
+        <p class="muted" id="weekTxt" style="margin-top:14px;font-size:14px"></p>
+      </div>
+      <div class="card">
+        <div class="kicker">Atenção</div>
+        <h3 style="font-size:22px;margin:6px 0 12px">Seus pontos fracos</h3>
+        <div class="list" id="weakList"></div>
+        <div class="list" id="nextList" style="margin-top:16px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISCIPLINAS -->
+  <section class="view" id="disciplinas">
+    <div class="head"><div><div class="kicker">16 disciplinas</div><h2>Revisão por disciplina</h2></div><p>Some as fichas revisadas, marque o ponto fraco e anote o que precisa voltar.</p></div>
+    <div class="tools">
+      <input id="q" type="search" placeholder="Buscar disciplina" aria-label="Buscar disciplina" autocomplete="off">
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- TREINO -->
+  <section class="view" id="treino">
+    <div class="head"><div><div class="kicker">Treino</div><h2>Seu desempenho e simulados</h2></div><p>Veja onde você acerta e erra e monte um simulado rápido com as questões do caderno.</p></div>
+    <div id="tPanel"></div>
+    <div class="head galHead"><div><div class="kicker">Bônus 1 e 2</div><h2>Registrar o que fez nos PDFs</h2></div><p>Para quem estuda no caderno em PDF: some as questões feitas e os resumos lidos.</p></div>
+    <div class="two">
+      <div class="card trk">
+        <span class="pill">Bônus 1</span>
+        <h3>500 questões comentadas</h3>
+        <div class="pair">
+          <label>Questões feitas<input type="number" id="qFeitas" min="0" max="500" inputmode="numeric"></label>
+          <label>Acertos<input type="number" id="qAcertos" min="0" max="500" inputmode="numeric"></label>
+        </div>
+        <div class="steps"><button class="sm" data-q="1">+1 feita</button><button class="sm" data-q="2">+1 feita e acertada</button><button class="sm" data-q="0">Desfazer última</button></div>
+        <div><div class="pct num" id="qPct">0%</div><div class="muted" style="font-size:13px;margin-top:4px" id="qTxt"></div></div>
+        <div class="bar" id="qBar"><i style="width:0"></i></div>
+      </div>
+      <div class="card trk">
+        <span class="pill">Bônus 2</span>
+        <h3>Guia de Revisão PRF</h3>
+        <div class="pair">
+          <label>Resumos lidos<input type="number" id="gLidos" min="0" max="366" inputmode="numeric"></label>
+          <label>Total<input type="text" value="366" disabled></label>
+        </div>
+        <div class="steps"><button class="sm" data-g="-1">−1</button><button class="sm" data-g="1">+1</button><button class="sm" data-g="5">+5</button><button class="sm" data-g="10">+10</button></div>
+        <div><div class="pct num" id="gPct">0%</div><div class="muted" style="font-size:13px;margin-top:4px" id="gTxt"></div></div>
+        <div class="bar" id="gBar"><i style="width:0"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MATERIAIS -->
+  <section class="view" id="materiais">
+    <div class="head"><div><div class="kicker">2.678 páginas em PDF</div><h2>Seus materiais</h2></div><p>Os três têm sumário clicável, marcadores e links de retorno.</p></div>
+    <div class="mats" id="mats"></div>
+    <div class="how">
+      <div><h3>Sumário clicável</h3><p>Escolha o assunto, vá direto à ficha e volte ao sumário.</p></div>
+      <div><h3>Edital</h3><p>Mapas de assuntos organizados a partir dos editais da PRF de 2018 e 2021.</p></div>
+      <div><h3>Pegadinhas de prova</h3><p>Cada ficha traz pegadinhas, resumo final e exemplos, com o selo “Revisão de Concursos / PRF 2027”.</p></div>
+      <div><h3>Pontos fracos</h3><p>Use as fichas para comparar regras e exceções e marque aqui o que precisa voltar.</p></div>
+    </div>
+    <div class="head galHead"><div><div class="kicker">Fichas de exemplo</div><h2>Veja como são as fichas</h2></div><p>Toque em uma ficha para ampliar. A coleção completa está no PDF.</p></div>
+    <div class="galTabs" id="galTabs"></div>
+    <div class="gal" id="gal"></div>
+    <div class="reset"><span>Seus dados ficam só neste navegador.</span><button id="resetBtn">Apagar meu progresso</button></div>
+  </section>
+  <!-- CADERNO DE QUESTÕES (HTML) -->
+  <section class="view" id="caderno"><div class="cad" id="cad"></div></section>
+  </main>
+
+  <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Ficha ampliada">
+    <div class="bar2"><div><b id="lbT"></b><small id="lbD"></small></div><div class="btns"><button id="lbP" aria-label="Ficha anterior">←</button><button id="lbN" aria-label="Próxima ficha">→</button><button id="lbX" aria-label="Fechar">✕</button></div></div>
+    <div class="pic"><img id="lbImg" alt=""><div id="lbH"></div></div>
+  </div>
+  <nav class="bnav" aria-label="Navegação principal">
+    <button data-view="inicio"><span>🏠</span>Início</button><button data-view="caderno"><span>✍️</span>Questões</button><button data-view="disciplinas"><span>📚</span>Disciplinas</button><button data-view="treino"><span>📈</span>Treino</button><button data-view="materiais"><span>🗂️</span>Materiais</button>
+  </nav>
+  <footer><span>Adhance · Revisão de Concursos</span><span>Material digital em PDF · PRF 2027</span></footer>
+</div>
+
+<script>
+/* Links dos PDFs e imagens. Preencha para ativar os botões e a galeria. */
+var LINKS={principal:"",questoes:"",guia:""};
+var IMGDATA={}; /* preenchido pelo script embutir-imagens.py */
+var FICHAS=[
+ ["armas-uso-restrito","Armas de Uso Restrito","Legislação Especial"],
+ ["posse-irregular","Posse Irregular","Legislação Especial"],
+ ["porte-ilegal","Porte Ilegal","Legislação Especial"],
+ ["infiltracao-agentes","Infiltração de Agentes","Legislação Especial"],
+ ["entrada-imovel","Entrada ou Permanência Ilegal em Imóvel","Legislação Especial"],
+ ["categoria-habilitacao","Categoria e Habilitação","Legislação de Trânsito"],
+ ["limites-pontos","Limites de Pontos para Suspensão","Legislação de Trânsito"],
+ ["peso-dimensoes","Limites de Peso e Dimensões","Legislação de Trânsito"],
+ ["licenciamento","Calendário de Licenciamento Anual","Legislação de Trânsito"],
+ ["principios-administracao","Princípios da Administração Pública","Direito Administrativo"],
+ ["tema-do-texto","Tema do Texto","Língua Portuguesa"],
+ ["tese-do-autor","Tese do Autor","Língua Portuguesa"],
+ ["funcoes-do-se","Funções do “SE”","Língua Portuguesa"],
+ ["haver-impessoal","Verbo “Haver” Impessoal","Língua Portuguesa"],
+ ["funcao-afim","Aplicações da Função Afim","Raciocínio Lógico-Matemático"],
+ ["escala","Escala Numérica e Escala Gráfica","Raciocínio Lógico-Matemático"],
+ ["areas-volumes","Estimativas e Aplicações de Áreas e Volumes","Raciocínio Lógico-Matemático"]
+,
+ ["ingles-present-perfect","Present Perfect","Língua Inglesa"],
+ ["espanhol-falsos-amigos","Falsos amigos","Língua Espanhola"],
+ ["informatica-backup","Backup: completo, incremental e diferencial","Informática"],
+ ["fisica-muv","MUV e frenagem","Física"],
+ ["etica-decreto-1171","Código de Ética do Servidor","Ética e Cidadania"],
+ ["geopolitica-faixa-fronteira","Faixa de fronteira","Geopolítica"],
+ ["historia-prf-base-legal","Base legal e missão da PRF","História da PRF"],
+ ["constitucional-remedios","Remédios constitucionais","Direito Constitucional"],
+ ["penal-tentativa","Tentativa e iter criminis","Direito Penal"],
+ ["processual-flagrante","Prisão em flagrante","Direito Processual Penal"],
+ ["direitos-humanos-tratados","Tratados de Direitos Humanos","Direitos Humanos"]
+].map(function(f){return{src:"fichas/"+f[0]+".webp",u:IMGDATA[f[0]],t:f[1],d:f[2]}});
+
+var DISC=[
+  ["Língua Portuguesa",205],["Raciocínio Lógico-Matemático",90],["Informática",80],["Física",65],
+  ["Ética e Cidadania",45],["Geopolítica",45],["História da PRF",26],["Língua Inglesa",50],
+  ["Língua Espanhola",50],["Legislação de Trânsito",438],["Direito Administrativo",80],["Direito Constitucional",71],
+  ["Direito Penal",75],["Direito Processual Penal",76],["Legislação Especial",334],["Direitos Humanos",81]
+];
+
+var HF=[
+["limites-velocidade","Limites de velocidade sem placa","Legislação de Trânsito",["Via de trânsito rápido: 80 km/h","Via arterial: 60 km/h","Via coletora: 40 km/h","Via local: 30 km/h"],"A placa de regulamentação sempre prevalece sobre o limite padrão da via.","Sem placa, vale o limite do tipo de via. Decore a sequência 80, 60, 40, 30."],
+["pontuacao-infracoes","Pontos por gravidade da infração","Legislação de Trânsito",["Leve: 3 pontos","Média: 4 pontos","Grave: 5 pontos","Gravíssima: 7 pontos"],"Gravíssima vale 7 pontos, não 6. A banca costuma trocar esse número.","Quanto mais grave a infração, mais pontos na CNH: 3, 4, 5 e 7."],
+["flagrante-especies","Espécies de flagrante","Direito Processual Penal",["Próprio: está cometendo ou acaba de cometer a infração","Impróprio: perseguido logo após, em situação que faça presumir ser o autor","Presumido: encontrado logo depois com instrumentos, armas ou objetos que façam presumir ser o autor"],"Flagrante preparado pela polícia torna o crime impossível (Súmula 145 do STF). Não confunda com o esperado, que é válido.","O art. 302 do CPP define as situações. Prazo para comunicar ao juiz: 24 horas."],
+["excludentes-ilicitude","Excludentes de ilicitude","Direito Penal",["Estado de necessidade","Legítima defesa","Estrito cumprimento de dever legal","Exercício regular de direito"],"O excesso, doloso ou culposo, é punível.","Quem age em uma das quatro hipóteses não pratica fato ilícito (CP, art. 23)."],
+["mal-e-mau","Mal e mau","Língua Portuguesa",["Mau é adjetivo e opõe-se a bom: um mau aluno","Mal é advérbio e opõe-se a bem: estuda mal","Mal também pode ser substantivo: o mal da dúvida","Mal pode ser conjunção de tempo: mal chegou, saiu"],"Faça o teste: se couber “bom”, escreva mau. Se couber “bem”, escreva mal.","Mau é do tipo de “bom”; mal é do tipo de “bem”."],
+["crase-basico","Crase: quando usar","Língua Portuguesa",["Ocorre da soma da preposição “a” com o artigo “a”","O verbo ou nome precisa pedir a preposição “a”","A palavra seguinte precisa aceitar o artigo feminino","Não há crase antes de verbo, de palavra masculina ou de pronome pessoal"],"Teste: troque por um verbo que peça “para a”. Se aparecer “ao” no masculino, há crase no feminino.","Sem preposição ou sem artigo, não há crase."],
+["negacao-proposicoes","Negação de proposições","Raciocínio Lógico-Matemático",["~(p ∧ q) equivale a ~p ∨ ~q","~(p ∨ q) equivale a ~p ∧ ~q","~(p → q) equivale a p ∧ ~q","Negação de “todo” é “algum não”"],"A negação de “todo A é B” não é “nenhum A é B”. É “algum A não é B”.","Troque o conectivo e negue as partes. Na condicional, mantenha o primeiro termo."],
+["malwares-tipos","Códigos maliciosos","Informática",["Vírus: precisa de um arquivo hospedeiro","Worm: replica-se sozinho pela rede","Trojan: disfarça-se de programa útil","Ransomware: sequestra dados e cobra resgate","Spyware: espiona o usuário"],"Worm não precisa de hospedeiro. Quem precisa é o vírus.","Cada tipo tem uma marca: hospedeiro, replicação, disfarce, resgate ou espionagem."],
+["energia-cinetica","Energia cinética e frenagem","Física",["Ec = m·v² / 2","Dobrar a velocidade quadruplica a energia","Com desaceleração constante, a distância de frenagem cresce com v²","Massa maior, mais energia a dissipar"],"A energia depende do quadrado da velocidade, não da velocidade simples.","Velocidade pesa muito mais que massa: por isso o excesso de velocidade é tão perigoso."],
+["medidas-provisorias","Medidas provisórias","Direito Constitucional",["Vigência de 60 dias, prorrogável uma vez por igual período","Após 45 dias, passam a trancar a pauta","Perdem a eficácia se não forem convertidas em lei no prazo","Vedadas em nacionalidade, cidadania, direitos políticos e partidos"],"Também são vedadas em direito penal, processual penal e processual civil.","A MP tem força de lei desde a edição, mas precisa de conversão pelo Congresso (CF, art. 62)."],
+["atributos-ato","Atributos do ato administrativo","Direito Administrativo",["Presunção de legitimidade","Imperatividade","Autoexecutoriedade","Tipicidade"],"A presunção de legitimidade é relativa e admite prova em contrário.","Nem todo ato tem todos os atributos. A autoexecutoriedade, por exemplo, depende de previsão legal ou de urgência."],
+["drogas-usuario-trafico","Usuário e tráfico","Legislação Especial",["Usuário (art. 28): advertência, prestação de serviços e medida educativa","Tráfico (art. 33): reclusão de 5 a 15 anos e multa","Para distinguir, o juiz avalia natureza, quantidade e local","Também pesam as circunstâncias da ação e os antecedentes"],"O usuário não sofre pena de prisão, mas o porte continua sendo crime.","A lei não fixa quantidade: a distinção depende do conjunto das circunstâncias (Lei 11.343, art. 28, § 2º)."]
+];
+var HI={"limites-velocidade":["CTB, art. 61, §1º","Sem placa, o limite depende do tipo de via, e a placa de regulamentação sempre prevalece."],
+"pontuacao-infracoes":["CTB, art. 259","Cada infração soma pontos na CNH de acordo com a sua gravidade."],
+"flagrante-especies":["CPP, art. 302","O CPP lista as situações em que a pessoa é considerada em flagrante delito."],
+"excludentes-ilicitude":["CP, art. 23","Em quatro hipóteses, o fato típico deixa de ser ilícito."],
+"mal-e-mau":["Gramática normativa","Mal e mau são classes de palavras diferentes e têm sentidos opostos."],
+"crase-basico":["Gramática normativa","A crase é a fusão da preposição “a” com o artigo “a”."],
+"negacao-proposicoes":["Lógica proposicional","Negar uma proposição composta exige trocar o conectivo e negar as partes."],
+"malwares-tipos":["Segurança da informação","Cada código malicioso se distingue pela forma de agir e de se espalhar."],
+"energia-cinetica":["Dinâmica","A energia de um veículo em movimento cresce com o quadrado da velocidade."],
+"medidas-provisorias":["CF, art. 62","A MP tem força de lei desde a edição, mas depende de conversão pelo Congresso."],
+"atributos-ato":["Direito Administrativo","Os atributos explicam por que o ato administrativo tem regime próprio."],
+"drogas-usuario-trafico":["Lei 11.343/2006","A lei trata de forma diferente quem consome e quem trafica."]};
+HF.forEach(function(x){var m=HI[x[0]]||["",""];FICHAS.push({src:"html/"+x[0]+".card",t:x[1],d:x[2],h:{p:x[3],g:x[4],r:x[5],ref:m[0],i:m[1]}})});
+function fhtml(f){var h=f.h,n=h.p.length,cards=h.p.map(function(t,k){var j=t.indexOf(": ");return '<div class="c"><b>'+(j>0?esc(t.slice(0,j)):(k+1))+'</b>'+esc(j>0?t.slice(j+2):t)+'</div>'}).join("");
+return '<div class="fh"><div class="fhi"><div class="hd"><h4>'+esc(f.t)+'</h4><div class="bd"><div>REVISÃO DE CONCURSOS<b>PRF</b><i>2027</i></div></div></div><div class="sub">'+esc(f.d)+(h.ref?' — '+esc(h.ref):'')+'</div>'+(h.i?'<div class="intro">'+esc(h.i)+'</div>':'')+'<div class="sec y">Pontos-chave</div><div class="grid2'+(n<4?' one':'')+'">'+cards+'</div><div class="pg"><b>Pegadinha</b>'+esc(h.g)+'</div><div class="fim">'+esc(h.r)+'</div><div class="ft"><span><b>Fonte:</b> '+esc(h.ref||f.d)+'</span><span>Revisão de Concursos · PRF 2027</span></div></div></div>'}
+function fimg(f,a){return f.h?fhtml(f):'<img src="'+(f.u||f.src)+'" alt="'+a+'" loading="lazy">'}
+function lbShow(f){var im=$("lbImg"),hb=$("lbH");if(f.h){im.style.display="none";im.removeAttribute("src");hb.innerHTML=fhtml(f)}else{hb.innerHTML="";im.style.display="";im.src=f.u||f.src;im.alt="Ficha: "+f.t}}
+FICHAS=FICHAS.map(function(f,i){return{f:f,i:i}}).sort(function(a,b){var x=DISC.findIndex(function(d){return d[0]===a.f.d}),y=DISC.findIndex(function(d){return d[0]===b.f.d});return x-y||a.i-b.i}).map(function(o){return o.f});
+var TOTAL=DISC.reduce(function(a,d){return a+d[1]},0);
+var $=function(id){return document.getElementById(id)};
+/* imagem da ficha ausente: troca por um cartão com o título, mantendo o layout */
+document.addEventListener("error",function(e){
+  var im=e.target;if(!im||im.tagName!=="IMG"||im.dataset.fb||!/fichas\//.test(im.getAttribute("src")||""))return;
+  var cur=im.getAttribute("src")||"",m=cur.match(/^(fichas\/.+)\.(webp|png|jpg|jpeg)$/i),X=["webp","png","jpg","jpeg"],n=parseInt(im.dataset.n||"0",10);
+  if(!im.dataset.exp)im.dataset.exp=m?m[1]+".webp":cur;
+  if(m&&n<3){im.dataset.n=n+1;im.src=m[1]+"."+X[n+1];return}
+  im.dataset.fb="1";
+  var t=(im.alt||"").replace(/^Ficha:\s*/,"")||(im.getAttribute("src")||"").split("/").pop().replace(/\.webp$/,"").replace(/-/g," ");
+  var w=t.split(" "),ln=[""],i;
+  for(i=0;i<w.length;i++){if((ln[ln.length-1]+" "+w[i]).trim().length>20&&ln[ln.length-1])ln.push(w[i]);else ln[ln.length-1]=(ln[ln.length-1]+" "+w[i]).trim()}
+  var tx=ln.slice(0,4).map(function(l,k){return '<text x="500" y="'+(600+k*70)+'" text-anchor="middle" font-family="Georgia,serif" font-size="56" font-weight="700" fill="#174638">'+esc(l)+'</text>'}).join("");
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1416"><rect width="1000" height="1416" fill="#f6f2e9"/><rect x="40" y="40" width="920" height="1336" rx="36" fill="none" stroke="#b28a42" stroke-width="6"/><text x="500" y="440" text-anchor="middle" font-family="Georgia,serif" font-size="30" letter-spacing="6" fill="#b28a42">FICHA</text>'+tx+'<text x="500" y="1280" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#66746c">imagem não encontrada</text><text x="500" y="1325" text-anchor="middle" font-family="monospace" font-size="24" fill="#66746c">procurei: '+esc(im.dataset.exp)+'</text></svg>';
+  im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+},true);
+
+var fmt=function(n){return n.toLocaleString("pt-BR")};
+var KEY="prf-area-v1";
+
+/* estado salvo no navegador */
+var S={exam:"",goal:20,disc:{},q:{f:0,a:0,h:[]},g:0,log:{},last:""};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);for(var k in p)S[k]=p[k]}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function D(n){return S.disc[n]||(S.disc[n]={done:0,weak:false,note:""})}
+function clamp(v,a,b){v=parseInt(v,10);if(isNaN(v))v=0;return Math.max(a,Math.min(b,v))}
+function today(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+/* navegação */
+var VIEWS=["inicio","disciplinas","treino","materiais","caderno"];
+function show(v,noHash){
+  if(VIEWS.indexOf(v)<0)v="inicio";if(v==="treino"&&window.renderPanel)renderPanel();
+  VIEWS.forEach(function(x){$(x).classList.toggle("on",x===v)});
+  document.querySelectorAll(".tabs button,.bnav button").forEach(function(b){b.setAttribute("aria-selected",b.dataset.view===v)});
+  if(!noHash)try{history.replaceState(null,"","#"+v)}catch(e){}
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tabs button,.bnav button").forEach(function(b){b.addEventListener("click",function(){show(b.dataset.view)})});
+document.addEventListener("click",function(e){var g=e.target.closest("[data-go]");if(g)show(g.dataset.go)});
+
+/* início */
+function renderQuick(){
+  var T=[["caderno","✍️","Treinar questões",QS.length+" questões comentadas"],["disciplinas","📚","Revisar por disciplina",DISC.length+" disciplinas"],["materiais","🗂️","Ver as fichas",FICHAS.length+" fichas de exemplo"],["treino","📈","Meu treino","Acertos e resumos lidos"]];
+  $("quick").innerHTML=T.map(function(t){return '<button type="button" class="qt" data-go="'+t[0]+'"><span class="ic">'+t[1]+'</span><b>'+t[2]+'</b><small>'+t[3]+'</small></button>'}).join("");
+}
+function renderHome(){
+  renderQuick();
+  var done=DISC.reduce(function(a,d){return a+D(d[0]).done},0),pc=done/TOTAL*100;
+  $("tot").textContent=fmt(done);
+  $("totBar").firstChild.style.width=pc+"%";
+  $("totTxt").textContent=done?pc.toFixed(1).replace(".",",")+"% da coleção. Faltam "+fmt(TOTAL-done)+" fichas.":"Comece pela disciplina que mais pesa na sua prova.";
+  var box=$("daysBox");
+  if(S.exam){
+    var t=new Date(),a=new Date(S.exam+"T00:00:00"),n=Math.ceil((a-new Date(t.getFullYear(),t.getMonth(),t.getDate()))/864e5);
+    box.innerHTML=n>0?'<b class="num">'+fmt(n)+'</b> <span class="muted">dias para a prova</span>':n===0?'<b>Hoje</b>':'<span class="muted">A data informada já passou.</span>';
+    if(n>0&&done<TOTAL){var need=Math.ceil((TOTAL-done)/n);box.innerHTML+='<p class="muted" style="font-size:13px;margin-top:6px">Para terminar a coleção até lá: cerca de '+fmt(need)+' fichas por dia.</p>'}
+  }else box.innerHTML='<span class="muted">Sem data definida.</span>';
+  $("exam").value=S.exam||"";$("goal").value=S.goal;
+
+  var days=[],max=S.goal,i,d;
+  for(i=6;i>=0;i--){d=new Date();d.setDate(d.getDate()-i);var k=today(d),v=S.log[k]||0;days.push({k:k,v:v,l:d.toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","")});if(v>max)max=v}
+  var top=max*1.15,sum=0,hit=0;
+  $("week").innerHTML=days.map(function(x){sum+=x.v;if(x.v>=S.goal)hit++;
+    return '<div class="col"><div class="tr"><em class="num">'+(x.v||"")+'</em><i class="'+(x.v>=S.goal?"hit":"")+'" style="height:'+(x.v/top*130)+'px"></i></div><span>'+x.l+'</span></div>'}).join("")+
+    '<div class="goalLine" style="bottom:'+(20+S.goal/top*130+2)+'px"><span>meta '+S.goal+'</span></div>';
+  $("weekTxt").textContent=sum?fmt(sum)+" fichas na semana. Meta batida em "+hit+" de 7 dias.":"Nenhuma ficha registrada nesta semana. O registro é automático quando você soma fichas em Disciplinas.";
+
+  var weak=DISC.filter(function(d){return D(d[0]).weak});
+  $("weakList").innerHTML=weak.length?weak.map(function(d){return '<button class="jump" data-focus="'+esc(d[0])+'"><span>'+d[0]+'</span><small class="num">'+D(d[0]).done+' / '+d[1]+'</small></button>'}).join(""):'<p class="muted" style="font-size:14px">Nenhum ponto fraco marcado. Use o botão “Ponto fraco” nas disciplinas.</p>';
+  var last=S.last&&DISC.filter(function(d){return d[0]===S.last})[0];
+  $("nextList").innerHTML=last?'<div class="kicker" style="margin-bottom:8px">Continuar de onde parou</div><button class="jump" data-focus="'+esc(last[0])+'"><span>'+last[0]+'</span><small class="num">'+D(last[0]).done+' / '+last[1]+'</small></button>':"";
+}
+document.addEventListener("click",function(e){var f=e.target.closest("[data-focus]");if(!f)return;q.value=f.dataset.focus;filter="todas";renderDisc();show("disciplinas")});
+$("exam").addEventListener("change",function(){S.exam=this.value;save();renderHome()});
+$("goal").addEventListener("change",function(){S.goal=clamp(this.value,1,500)||20;save();renderHome()});
+
+/* hero: imagem do usuário ou pilha de fichas de exemplo */
+function fk(id){return FICHAS.filter(function(f){return f.src.indexOf("/"+id+".")>-1})[0]}
+$("heroArt").innerHTML='<div class="fan">'+[["l","armas-uso-restrito"],["r","licenciamento"],["m","funcoes-do-se"]].map(function(x){var f=fk(x[1]);return '<img class="'+x[0]+'" src="'+(f.u||f.src)+'" alt="Ficha: '+esc(f.t)+'">'}).join("")+'</div>';
+
+/* disciplinas */
+var q=$("q"),filter="todas";
+var FIL=[["todas","Todas"],["andamento","Em andamento"],["fracos","Pontos fracos"],["concluidas","Concluídas"]];
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+function stOf(d){var n=D(d[0]).done;return n>=d[1]?["Concluída","ok"]:n>0?["Em andamento",""]:["Não iniciada",""]}
+function renderChips(){$("chips").innerHTML=FIL.map(function(f){return '<button class="chip" data-f="'+f[0]+'" aria-pressed="'+(filter===f[0])+'">'+f[1]+'</button>'}).join("")}
+$("chips").addEventListener("click",function(e){var b=e.target.closest("[data-f]");if(!b)return;filter=b.dataset.f;renderChips();renderDisc()});
+function thumbsFor(n){
+  var L=FICHAS.filter(function(f){return f.d===n});if(!L.length)return"";
+  return '<div class="thumbs">'+L.map(function(f){return '<button data-open="'+FICHAS.indexOf(f)+'" aria-label="Ver ficha: '+esc(f.t)+'">'+fimg(f,"")+'</button>'}).join("")+'<small>fichas de exemplo</small></div>';
+}
+var D2C={"Língua Portuguesa":"Português","Raciocínio Lógico-Matemático":"Raciocínio Lógico-Matemático","Informática":"Informática","Física":"Física","Ética e Cidadania":"Ética e Cidadania","Geopolítica":"Geopolítica","História da PRF":"História da PRF","Língua Inglesa":"Inglês","Língua Espanhola":"Espanhol","Legislação de Trânsito":"Trânsito","Direito Administrativo":"Administrativo","Direito Constitucional":"Constitucional","Direito Penal":"Penal","Direito Processual Penal":"Processo Penal","Legislação Especial":"Legislação Especial","Direitos Humanos":"Direitos Humanos"};
+function discExtra(n){
+  var c=D2C[n],ql=QS.filter(function(q){return q.d===c}),sq=cadStats(ql);
+  var fl=FICHAS.map(function(f,i){return f.d===n?'<button type="button" class="fchip" data-open="'+i+'">'+esc(f.t)+'</button>':""}).join("");
+  return '<div class="dact">'+(ql.length?'<button type="button" class="dq" data-dq="'+esc(c)+'"><span>✍️ Treinar questões</span><small>'+sq.f+' de '+ql.length+' feitas</small></button>':'<span class="dq off">Sem questões neste caderno</span>')+'</div>'+(fl?'<div class="dsec"><span class="kicker">Fichas desta disciplina</span><div class="fchips">'+fl+'</div></div>':"");
+}
+document.addEventListener("click",function(e){var g=e.target.closest("[data-dq]");if(!g)return;cadDisc=g.dataset.dq;cadSim=null;cadView="questoes";renderCad();show("caderno")});
+function renderDisc(){
+  var t=norm(q.value.trim());
+  var list=DISC.filter(function(d){
+    if(t&&norm(d[0]).indexOf(t)<0)return false;var s=D(d[0]);
+    if(filter==="andamento")return s.done>0&&s.done<d[1];
+    if(filter==="fracos")return s.weak;
+    if(filter==="concluidas")return s.done>=d[1];
+    return true});
+  $("grid").innerHTML=list.length?list.map(function(d){
+    var s=D(d[0]),st=stOf(d),pc=s.done/d[1]*100,n=esc(d[0]);
+    return '<article class="disc'+(st[1]?" ok":s.done>0?" go":"")+(s.weak?" weak":"")+'" data-n="'+n+'">'+
+     '<div class="t"><h3>'+n+'</h3><span class="st '+st[1]+'">'+st[0]+'</span></div>'+
+     '<div class="cnt"><b class="num">'+s.done+'<span> / '+d[1]+'</span></b><span class="num">'+Math.round(pc)+'%</span></div>'+
+     '<div class="bar'+(st[1]?" ok":"")+'"><i style="width:'+pc+'%"></i></div>'+
+     '<div class="steps"><button class="sm" data-d="-1">−1</button><button class="sm" data-d="1">+1</button><button class="sm" data-d="5">+5</button><button class="sm" data-d="10">+10</button><button class="sm" data-d="all">Concluir</button>'+
+     '<button class="sm'+(s.weak?" on":"")+'" data-weak="1" aria-pressed="'+s.weak+'">Ponto fraco</button></div>'+
+     discExtra(d[0])+'<details'+(s.note?" open":"")+'><summary>Anotações</summary><textarea data-note="1" placeholder="O que precisa voltar nesta disciplina?" aria-label="Anotações de '+n+'">'+esc(s.note)+'</textarea></details></article>';
+  }).join(""):'<div class="empty">Nenhuma disciplina neste filtro.</div>';
+}
+q.addEventListener("input",renderDisc);
+function nameOf(el){var a=el.closest(".disc");return a&&a.dataset.n.replace(/&amp;/g,"&")}
+$("grid").addEventListener("click",function(e){
+  var n=nameOf(e.target);if(!n)return;
+  var d=DISC.filter(function(x){return x[0]===n})[0],s=D(n);
+  var b=e.target.closest("[data-d]");
+  if(b){
+    var before=s.done,v=b.dataset.d;
+    s.done=v==="all"?d[1]:clamp(s.done+parseInt(v,10),0,d[1]);
+    var delta=s.done-before,k=today();
+    if(delta){S.log[k]=Math.max(0,(S.log[k]||0)+delta);S.last=n}
+  }else if(e.target.closest("[data-weak]")){s.weak=!s.weak}
+  else return;
+  save();renderDisc();renderHome();
+});
+$("grid").addEventListener("input",function(e){if(!e.target.matches("[data-note]"))return;var n=nameOf(e.target);D(n).note=e.target.value;save()});
+
+/* treino */
+function renderTreino(){
+  var f=S.q.f,a=Math.min(S.q.a,f);
+  $("qFeitas").value=f;$("qAcertos").value=a;$("gLidos").value=S.g;
+  $("qPct").textContent=f?Math.round(a/f*100)+"%":"0%";
+  $("qTxt").textContent=f?"Aproveitamento: "+a+" acertos em "+f+" questões. Faltam "+(500-f)+" do caderno.":"Aproveitamento aparece quando você registrar a primeira questão.";
+  $("qBar").firstChild.style.width=(f/500*100)+"%";
+  $("gPct").textContent=Math.round(S.g/366*100)+"%";
+  $("gTxt").textContent=S.g+" de 366 resumos lidos.";
+  $("gBar").firstChild.style.width=(S.g/366*100)+"%";
+}
+$("qFeitas").addEventListener("change",function(){S.q.f=clamp(this.value,0,500);S.q.a=Math.min(S.q.a,S.q.f);save();renderTreino()});
+$("qAcertos").addEventListener("change",function(){S.q.a=clamp(this.value,0,Math.min(500,S.q.f));save();renderTreino()});
+$("gLidos").addEventListener("change",function(){S.g=clamp(this.value,0,366);save();renderTreino()});
+document.querySelector("#treino").addEventListener("click",function(e){
+  var b=e.target.closest("[data-q]"),g=e.target.closest("[data-g]");
+  if(b){var m=b.dataset.q;
+    if(m==="0"){var h=S.q.h.pop();if(h!==undefined){S.q.f=Math.max(0,S.q.f-1);if(h)S.q.a=Math.max(0,S.q.a-1)}}
+    else if(S.q.f<500){S.q.f++;if(m==="2")S.q.a++;S.q.h.push(m==="2"?1:0);if(S.q.h.length>200)S.q.h.shift()}
+    save();renderTreino()}
+  if(g){S.g=clamp(S.g+parseInt(g.dataset.g,10),0,366);save();renderTreino()}
+});
+
+
+/* ===== Caderno de questões (HTML) ===== */
+/* orig:false = questão transcrita do caderno em PDF (órgão, cargo e data conforme a página). orig:true = treino autoral, sem vínculo com prova. */
+var CAD_DISC=["Português","Raciocínio Lógico-Matemático","Informática","Física","Ética e Cidadania","Geopolítica","Inglês","Espanhol","Trânsito","Administrativo","Constitucional","Penal","Processo Penal","Legislação Especial","Direitos Humanos","História da PRF"];
+var QS=[
+/* Português */
+{id:"040",d:"Português",t:"Redação oficial",src:"PF • Agente Administrativo • 29/06/2025 • item 19",ctx:"Julgue os itens seguintes com base no Manual de Redação da Presidência da República.",stmt:"No corpo do texto de uma correspondência oficial, os pronomes de tratamento podem ser empregados em sua forma abreviada ou por extenso.",ans:"C",com:"O comando delimita a análise ao Manual de Redação da Presidência da República. Na seção sobre pronomes de tratamento, o Manual admite as duas formas no corpo do texto. A posição da expressão importa: corpo do texto, vocativo e endereçamento têm orientações próprias. Na prática administrativa, também é necessário observar as normas específicas aplicáveis ao órgão.",ref:"Manual de Redação da Presidência da República, 3ª edição, item 4.1."},
+{id:"041",d:"Português",t:"Clareza e precisão",src:"PF • Agente Administrativo • 29/06/2025 • item 20",ctx:"Julgue os itens seguintes com base no Manual de Redação da Presidência da República.",stmt:"Nas comunicações oficiais, deve-se evitar o emprego de palavras e expressões simples, assim como o de frases curtas.",ans:"E",com:"A assertiva inverte a orientação do Manual. Clareza e precisão são favorecidas por palavras e expressões simples e por frases curtas e bem estruturadas. A linguagem oficial deve ser compreensível, sem perder a correção gramatical. Termos técnicos podem ser necessários, mas isso não transforma a complexidade da escrita em uma qualidade por si só.",ref:"Manual de Redação da Presidência da República, item 3.1."},
+{id:"T01",d:"Português",t:"Verbo haver impessoal",orig:true,ficha:"haver-impessoal",stmt:"No período “Havia muitos candidatos na fila”, o verbo haver, com sentido de existir, é impessoal e, por isso, permanece no singular.",ans:"C",com:"Haver no sentido de existir não tem sujeito e fica na terceira pessoa do singular. A forma “Haviam muitos candidatos” é erro de concordância: “muitos candidatos” é objeto direto, não sujeito.",ref:"Gramática normativa: verbo haver impessoal."},
+{id:"T02",d:"Português",t:"Funções do “se”",orig:true,ficha:"funcoes-do-se",stmt:"Em “Vendem-se casas”, o “se” é partícula apassivadora e o verbo concorda com o sujeito paciente “casas”.",ans:"C",com:"Na voz passiva sintética, o “se” apassiva o verbo transitivo direto e o sujeito é o termo que sofre a ação. Por isso o verbo vai ao plural: “Vendem-se casas”. Compare com “Precisa-se de casas”, em que o “se” indetermina o sujeito e o verbo fica no singular.",ref:"Gramática normativa: partícula apassivadora e índice de indeterminação do sujeito."},
+/* Raciocínio */
+{id:"062",d:"Raciocínio Lógico-Matemático",t:"Escala cartográfica",src:"SEDUC/PI • Professor de Geografia • 22/03/2026 • item 25",ctx:"Um professor de geografia propõe para a turma de ensino fundamental uma atividade em que devem ser utilizados mapas.",stmt:"A atividade proposta consiste em analisar detalhadamente as ruas, as quadras, os equipamentos urbanos e o uso da terra de um bairro da cidade. Considerando a situação hipotética apresentada e a relação entre escala cartográfica, nível de redução e grau de detalhamento necessário para a atividade, assinale a opção que indica corretamente qual a escala mais adequada para os mapas a serem utilizados na atividade proposta.",alts:["1:10.000","1:1.000.000","1:5.000.000","1:20.000.000","1:30.000.000"],ans:"A",com:"A escala 1:10.000 tem o menor denominador e, portanto, a menor redução entre as opções. Permite maior detalhamento de ruas e equipamentos de um bairro. Escalas como 1:30.000.000 representam áreas extensas, com muito menos detalhe local.",ref:"Cartografia: relação entre escala, redução e detalhamento.",ficha:"escala"},
+{id:"T03",d:"Raciocínio Lógico-Matemático",t:"Argumentação com “alguns”",orig:true,stmt:"Se todos os policiais são concursados e alguns concursados são estudiosos, então necessariamente alguns policiais são estudiosos.",ans:"E",com:"Os concursados que são estudiosos podem ser justamente os que não são policiais. A premissa “alguns” não garante interseção com o conjunto dos policiais, então a conclusão não é necessária.",ref:"Lógica de predicados: diagramas de conjuntos."},
+{id:"T04",d:"Raciocínio Lógico-Matemático",t:"Negação de proposições",orig:true,stmt:"A negação de “Todos os candidatos foram aprovados” é “Nenhum candidato foi aprovado”.",ans:"E",com:"A negação de “todo” é “pelo menos um não”. Logo, a negação correta é “Pelo menos um candidato não foi aprovado”. “Nenhum” é uma proposição contrária, não contraditória.",ref:"Lógica: negação de quantificadores."},
+/* Informática */
+{id:"082",d:"Informática",t:"Endereçamento IP",src:"PF • Agente e Escrivão • 27/07/2025 • item 65",ctx:"Julgue os itens a seguir, em relação a redes de computadores e conceitos de proteção e segurança.",stmt:"No protocolo IPv6, cada endereço tem 256 bits, que são divididos em duas partes (a primeira define a rede e a segunda identifica o host); esse protocolo elimina o uso de máscaras de sub-rede, substituindo-as por prefixos de rede fixos; por sua vez, o IPv4 utiliza endereços de 32 bits e máscaras de sub-rede variáveis para definir a separação entre rede e host.",ans:"E",com:"IPv6 usa endereços de 128 bits, e não 256. Também admite diferentes comprimentos de prefixo, não prefixos fixos universais. IPv4 usa 32 bits. Um único erro numérico já bastaria para invalidar o item.",ref:"RFC 4291, seção 2; RFC 8200."},
+{id:"083",d:"Informática",t:"Computação em nuvem",src:"PF • Agente e Escrivão • 27/07/2025 • item 67",ctx:"Julgue os itens que se seguem, referentes a computação em nuvem, fundamentos da teoria geral de sistemas e sistemas de informação.",stmt:"A computação em nuvem permite que os usuários acessem recursos computacionais sob demanda, como armazenamento e processamento, sem a necessidade de conexão com a Internet, pois os dados e serviços são armazenados localmente nos dispositivos dos usuários.",ans:"E",com:"Nuvem oferece recursos por rede, sob demanda. O enunciado descreve armazenamento e processamento exclusivamente locais e dispensa conectividade, confundindo nuvem com computação no dispositivo. Uma nuvem privada pode usar rede privada; isso não torna desnecessária a comunicação com o serviço.",ref:"NIST SP 800-145: acesso amplo por rede e autosserviço sob demanda."},
+{id:"T05",d:"Informática",t:"Tipos de backup",orig:true,ficha:"informatica-backup",stmt:"No backup incremental, são copiados apenas os arquivos alterados desde o último backup, seja ele completo ou incremental.",ans:"C",com:"O incremental parte do último backup de qualquer tipo, completo ou incremental, e copia só o que mudou. Já o diferencial copia o que mudou desde o último backup completo. Na restauração, o incremental exige o completo mais todos os incrementais seguintes.",ref:"Conceitos de cópia de segurança."},
+{id:"T06",d:"Informática",t:"Phishing",orig:true,stmt:"Phishing é uma técnica de fraude em que o atacante se passa por instituição confiável, geralmente por mensagem falsa, para induzir a vítima a fornecer dados pessoais ou financeiros.",ans:"C",com:"O phishing explora engenharia social: a mensagem imita uma fonte legítima e leva a pessoa a clicar, informar senhas ou instalar algo. Não depende de falha técnica no equipamento da vítima.",ref:"Segurança da informação: engenharia social."},
+/* Física */
+{id:"T07",d:"Física",t:"Movimento retilíneo uniforme",orig:true,stmt:"No movimento retilíneo uniforme, a velocidade é constante e a aceleração é nula.",ans:"C",com:"MRU é trajetória reta com velocidade constante. Se a velocidade não varia, a aceleração é zero e a distância percorrida é proporcional ao tempo.",ref:"Cinemática: MRU, s = s₀ + v·t."},
+{id:"T08",d:"Física",t:"MUV e frenagem",orig:true,ficha:"fisica-muv",stmt:"Um veículo a 72 km/h freia com desaceleração constante e para em 5 s. Qual é a distância percorrida durante a frenagem?",alts:["25 m","40 m","50 m","72 m","100 m"],ans:"C",com:"72 km/h = 20 m/s. Com desaceleração constante, a velocidade média é (20 + 0)/2 = 10 m/s. Em 5 s: 10 × 5 = 50 m. A desaceleração é de 4 m/s².",ref:"Cinemática: MUV, Δs = (v₀ + v)/2 · t."},
+/* Ética */
+{id:"128",d:"Ética e Cidadania",t:"Proteção de informações pessoais",src:"Câmara dos Deputados • Policial Legislativo • 26/04/2026 • item 73",ctx:"Com base nas disposições da Lei de Acesso à Informação, da Lei Geral de Proteção de Dados Pessoais e da Lei n.º 8.429/1992, que trata da improbidade administrativa, julgue os itens a seguir.",stmt:"O acesso às informações pessoais relativas à intimidade, à vida privada, à honra e à imagem restringe-se a agentes públicos legalmente autorizados e à pessoa a que tais informações se refiram, independentemente de classificação de sigilo e pelo prazo máximo de 100 anos a contar da sua data de produção.",ans:"C",com:"O prazo máximo de cem anos independe da classificação formal de sigilo. Trata-se de proteção de informações pessoais, com as hipóteses legais de acesso e divulgação previstas na LAI.",ref:"Lei 12.527/2011, art. 31."},
+{id:"129",d:"Ética e Cidadania",t:"Nepotismo",src:"PCDF • Delegado • 05/07/2026 • item 6",ctx:"Julgue os itens subsecutivos, acerca dos princípios da administração pública, dos órgãos públicos, da administração indireta e entidades paraestatais, dos atos administrativos e dos poderes da administração pública.",stmt:"A vedação ao nepotismo decorre diretamente dos princípios mencionados no art. 37, caput, da Constituição Federal de 1988, não se exigindo edição de lei formal para coibir tal prática.",ans:"C",com:"A proibição decorre dos princípios constitucionais da administração, especialmente impessoalidade e moralidade. Sua incidência não depende da edição prévia de uma lei específica para cada órgão.",ref:"CF, art. 37; STF, Tema 66 e Súmula Vinculante 13."},
+/* Geopolítica */
+{id:"160",d:"Geopolítica",t:"Fronteira agrícola no Cerrado",src:"SEDUC/PI • Professor de Geografia • 22/03/2026 • item 36",ctx:"Com o aumento de sua área produtiva e o crescimento da produtividade por hectare, o estado do Piauí ampliou em 8,6% a produção de grãos da safra 2024/2025, em comparação com a de 2023/2024, tendo fechado o período com a produção de 6,2 milhões de toneladas de grãos. Tendo como referência as informações precedentes, assinale a opção correta acerca da agricultura piauiense.",alts:["A presença de solos férteis com acidez elevada e textura arenosa, além da extensa rede hidrográfica e de altos índices de pluviosidade, favorecem a mecanização da cultura de grãos no Piauí.","A cultura do algodão presente no Piauí desde o período colonial tem perdido áreas de produção e produtividade a partir da expansão do cultivo de grãos como soja, milho e feijão.","A soja e o milho são os principais produtos agrícolas do Piauí e sua produção se destaca nas áreas de Cerrado no estado, em municípios como Baixa Grande do Ribeiro, Uruçuí, Ribeiro Gonçalves, Bom Jesus, Santa Filomena e Currais.","A expansão do agronegócio e em especial da produção de grãos evidencia que o Piauí tem as condições ideais para a expansão da fronteira agrícola, como solos extremamente férteis e clima tropical com elevada pluviosidade.","A produção de grãos no estado do Piauí se concentra nas áreas próximas aos limites territoriais com o Maranhão, em municípios como Picos, São Raimundo Nonato e Parnaíba."],ans:"C",com:"A alternativa C localiza corretamente o destaque da soja e do milho no Cerrado piauiense. A expansão depende de tecnologia, correção do solo, infraestrutura e organização produtiva; não pode ser explicada por suposta fertilidade natural excepcional de todos os solos.",ref:"Geografia agrária brasileira: expansão do MATOPIBA; dados do período indicado na questão."},
+/* Inglês */
+{id:"173",d:"Inglês",t:"Conectores de contraste",src:"Câmara dos Deputados • Policial Legislativo • 26/04/2026 • item 31",apoio:"Consulte o apoio na página 128 do caderno em PDF.",stmt:"The words “Rather” (last sentence of the first paragraph) and “Instead” (fourth sentence of the second paragraph) could be used interchangeably in the text without this making it incoherent.",ans:"C",com:"Nos dois contextos, os conectores introduzem uma alternativa ao que se poderia esperar. A troca preserva a oposição das ideias e não torna a argumentação incoerente.",ref:"Semântica de rather e instead."},
+{id:"174",d:"Inglês",t:"Inferência autorizada",src:"Câmara dos Deputados • Policial Legislativo • 26/04/2026 • item 32",apoio:"Consulte o apoio na página 128 do caderno em PDF.",stmt:"In the sentence “The police are therefore typically politicized, with appointments being part of the patronage system that rewards regime loyalists” (first paragraph), the authors imply that, in authoritarian societies, proper qualification may not suffice for someone to become a police officer.",ans:"C",com:"O sistema de favorecimento descrito recompensa a lealdade ao regime. Por isso, é possível inferir que qualificação profissional, isoladamente, não assegura o ingresso na polícia.",ref:"Interpretação: patronage system e regime loyalists."},
+/* Espanhol */
+{id:"184",d:"Espanhol",t:"Compreensão textual",src:"SEED/SE • Professor de Espanhol • 11/01/2026 • item 41",apoio:"Consulte o apoio na página 140 do caderno em PDF.",stmt:"De acuerdo con en el texto 10A4, señala la opción que presenta la principal razón por la que el uso continuado de las tecnologías digitales después de la pandemia no ha resultado en una transformación profunda de las prácticas docentes.",alts:["El alumnado mostró poco interés en las tecnologías digitales tras el regreso a las clases presenciales.","Los centros educativos, tras el fin de la pandemia, volvieron a prohibir el uso de recursos digitales en el aula para priorizar los métodos de enseñanza tradicionales.","La adopción acelerada de las tecnologías digitales durante la pandemia no estuvo acompañada de una formación docente adecuada.","El profesorado cree que las tecnologías digitales dificultan el aprendizaje y, por lo tanto, opta por evitarlas siempre que sea posible.","Las tecnologías disponibles actualmente son insuficientes y no permiten una innovación significativa en las prácticas pedagógicas."],ans:"C",com:"A alternativa C reúne a causa destacada no texto: a adoção rápida de ferramentas não veio acompanhada de formação docente suficiente. O texto não diz que todos rejeitaram a tecnologia nem que faltavam necessariamente ferramentas capazes de inovar.",ref:"Interpretação do texto 10A4, especialmente os dois últimos parágrafos."},
+/* Trânsito */
+{id:"221",d:"Trânsito",t:"Sinalização de advertência",src:"Cachoeiro de Itapemirim • Engenheiro de Trânsito • 7/4/2024 • item 74",ctx:"Com referência a estudos de segurança viária, julgue os próximos itens.",stmt:"Dentro do escopo da segurança viária, a sinalização vertical de advertência tem como finalidade ser utilizada para alertar os condutores sobre as condições potencialmente perigosas e as situações de obstáculos ou restrições existentes em uma via, ou em áreas adjacentes a ela, indicando a natureza dessas situações à frente, quer sejam permanentes ou eventuais.",ans:"C",com:"A advertência alerta antecipadamente para condições potencialmente perigosas, obstáculos ou restrições. Seu papel é permitir que o condutor reconheça o risco e ajuste a condução, distinguindo-se da imposição de obrigações e proibições própria da regulamentação.",ref:"Manual Brasileiro de Sinalização de Trânsito, volume II."},
+{id:"222",d:"Trânsito",t:"Padronização da sinalização",src:"Cachoeiro de Itapemirim • Engenheiro de Trânsito • 7/4/2024 • item 75",ctx:"Com referência a estudos de segurança viária, julgue os próximos itens.",stmt:"Na concepção e na implantação da sinalização de trânsito, deve-se ter como princípio básico as condições de percepção dos usuários da via, garantindo a real eficácia dos sinais. Um dos princípios da sinalização é o princípio da padronização, segundo o qual a sinalização deve seguir um padrão legalmente estabelecido e situações iguais devem ser sinalizadas com o mesmo critério.",ans:"C",com:"Situações equivalentes devem receber sinalização com o mesmo critério e dentro do padrão legal. A uniformidade facilita reconhecer e compreender a mensagem, reduzindo interpretações inesperadas pelo usuário da via.",ref:"Manuais Brasileiros de Sinalização de Trânsito: princípios da sinalização."},
+{id:"T09",d:"Trânsito",t:"Categoria B",orig:true,ficha:"categoria-habilitacao",stmt:"A habilitação na categoria B autoriza a condução de veículo motorizado cujo peso bruto total não exceda 3.500 kg e cuja lotação não exceda oito lugares, excluído o do motorista.",ans:"C",com:"Esse é o limite da categoria B no CTB. Acima desses limites a categoria exigida é outra (C, D ou E, conforme o veículo).",ref:"CTB, art. 143, II."},
+{id:"T10",d:"Trânsito",t:"Pontos para suspensão da CNH",orig:true,ficha:"limites-pontos",stmt:"Segundo o CTB, o condutor que não tenha cometido nenhuma infração gravíssima no período de 12 meses só chega ao limite de pontos para suspensão do direito de dirigir ao atingir 40 pontos.",ans:"C",com:"O limite é de 20 pontos se houver duas ou mais infrações gravíssimas, 30 pontos se houver uma gravíssima e 40 pontos se não houver nenhuma gravíssima, sempre no período de 12 meses. Confira o texto vigente do CTB antes da prova.",ref:"CTB, art. 261, § 1º."},
+/* Administrativo */
+{id:"274",d:"Administrativo",t:"Organização administrativa",src:"PF • Agente Administrativo • 29/06/2025 • item 61",ctx:"Julgue os itens subsequentes, relativos a noções de direito administrativo.",stmt:"A criação do Departamento de Polícia Federal (DPF) é exemplo de desconcentração administrativa, uma vez que o DPF não goza de personalidade jurídica própria.",ans:"C",com:"Desconcentração é a distribuição interna de competências entre órgãos de uma mesma pessoa jurídica. A Polícia Federal integra a administração direta da União e não tem personalidade jurídica própria. A criação de uma pessoa jurídica distinta, como uma autarquia, exemplifica descentralização. O critério que resolve a questão é verificar se existe ou não uma nova pessoa jurídica.",ref:"Decreto-Lei nº 200/1967, art. 4º; classificação doutrinária da organização administrativa."},
+{id:"275",d:"Administrativo",t:"Controle externo",src:"PF • Agente Administrativo • 29/06/2025 • item 62",ctx:"A respeito de licitações, controle da administração pública e responsabilidade civil do Estado, julgue os itens a seguir.",stmt:"O controle legislativo sobre os atos da administração pública federal é exercido pelo Congresso Nacional com o auxílio do Tribunal de Contas da União (TCU), competindo a este último, entre outras atribuições, fiscalizar as contas nacionais das empresas supranacionais de cujo capital social a União participe, de forma direta ou indireta, nos termos do tratado constitutivo.",ans:"C",com:"O Congresso exerce o controle externo com auxílio do TCU. A fiscalização das contas de empresas supranacionais com participação da União integra as competências constitucionais do Tribunal.",ref:"CF, arts. 70 e 71, V."},
+/* Constitucional */
+{id:"306",d:"Constitucional",t:"Liberdade de imprensa",src:"PF • Delegado • 27/07/2025 • item 16",ctx:"Com base na legislação pertinente e na jurisprudência do STF, julgue os itens a seguir, relativos a diversos aspectos do direito constitucional.",stmt:"Considere que uma empresa jornalística tenha publicado entrevista na qual o entrevistado tenha imputado falsamente a prática de crime a terceiro, mesmo havendo, à época da divulgação da informação, indícios concretos da falsidade da imputação, de modo que não fora observado o dever de cuidado da veracidade dos fatos. Nessa situação, em razão da proteção constitucional à liberdade de imprensa, a empresa jornalística que publicou a entrevista não será responsabilizada.",ans:"E",com:"A liberdade de imprensa não elimina a responsabilidade civil em qualquer situação. O caso descreve indícios concretos de falsidade e descumprimento do dever de cuidado na divulgação de imputação criminosa. Esses elementos afastam a imunidade absoluta afirmada no item.",ref:"CF, art. 5º, V e X; STF, Tema 995."},
+{id:"307",d:"Constitucional",t:"Limites das medidas provisórias",src:"PF • Delegado • 27/07/2025 • item 18",ctx:"Julgue os itens seguintes, em relação ao Poder Executivo, ao Poder Legislativo e ao processo legislativo.",stmt:"É possível a edição de medida provisória que trate de matérias relacionadas a cidadania e a direito civil, tributário, urbanístico e financeiro.",ans:"E",com:"O erro está em incluir cidadania entre matérias que podem ser tratadas por medida provisória. A Constituição veda expressamente medidas provisórias sobre nacionalidade, cidadania, direitos políticos, partidos políticos e direito eleitoral, entre outras matérias.",ref:"CF, art. 62, § 1º, I, a."},
+/* Penal */
+{id:"T11",d:"Penal",t:"Tentativa",orig:true,ficha:"penal-tentativa",stmt:"Diz-se tentado o crime quando, iniciada a execução, não se consuma por circunstâncias alheias à vontade do agente.",ans:"C",com:"A tentativa exige início da execução e não consumação por circunstâncias alheias à vontade do agente. Se o agente interrompe por vontade própria, o caso é de desistência voluntária ou arrependimento eficaz, não de tentativa.",ref:"CP, art. 14, II."},
+{id:"T12",d:"Penal",t:"Desistência voluntária",orig:true,ficha:"penal-tentativa",stmt:"Na desistência voluntária, o agente responde pela tentativa do crime que pretendia praticar.",ans:"E",com:"Na desistência voluntária, o agente responde apenas pelos atos já praticados, se estes constituírem crime por si. Como a não consumação decorre da vontade dele, não há tentativa.",ref:"CP, art. 15."},
+/* Processo Penal */
+{id:"T13",d:"Processo Penal",t:"Quem pode prender em flagrante",orig:true,ficha:"processual-flagrante",stmt:"Qualquer do povo pode prender quem quer que seja encontrado em flagrante delito, e as autoridades policiais e seus agentes devem fazê-lo.",ans:"C",com:"O flagrante é facultativo para qualquer pessoa e obrigatório para as autoridades policiais e seus agentes. Essa distinção costuma ser cobrada.",ref:"CPP, art. 301."},
+{id:"T14",d:"Processo Penal",t:"Comunicação da prisão em flagrante",orig:true,ficha:"processual-flagrante",stmt:"Em até 24 horas após a realização da prisão em flagrante, o auto de prisão deve ser encaminhado ao juiz competente.",ans:"C",com:"O auto de prisão em flagrante deve ser encaminhado ao juiz em até 24 horas. Se o autuado não informar advogado, cópia integral vai à Defensoria Pública no mesmo prazo.",ref:"CPP, art. 306, § 1º."},
+/* Legislação Especial */
+{id:"T15",d:"Legislação Especial",t:"Posse irregular de arma de uso permitido",orig:true,ficha:"posse-irregular",stmt:"Possuir arma de fogo de uso permitido em desacordo com determinação legal ou regulamentar, no interior da própria residência, configura o crime de posse irregular previsto no Estatuto do Desarmamento.",ans:"C",com:"A posse irregular de arma de uso permitido é a conduta do art. 12 e se refere à residência, à dependência dela ou ao local de trabalho, desde que o agente seja o titular ou responsável legal do estabelecimento. Fora desses locais, a situação tende ao porte.",ref:"Lei 10.826/2003, art. 12."},
+{id:"T16",d:"Legislação Especial",t:"Apreensão na Lei de Crimes Ambientais",orig:true,stmt:"Na Lei de Crimes Ambientais, verificada a infração, serão apreendidos seus produtos e instrumentos, lavrando-se os respectivos autos.",ans:"C",com:"O art. 25 determina a apreensão dos produtos e instrumentos da infração e a lavratura dos autos. A destinação dos bens apreendidos, como animais, madeira e produtos perecíveis, é tratada nos parágrafos do mesmo artigo.",ref:"Lei 9.605/1998, art. 25."},
+/* Direitos Humanos */
+{id:"T17",d:"Direitos Humanos",t:"Declaração Universal de 1948",orig:true,ficha:"direitos-humanos-tratados",stmt:"A Declaração Universal dos Direitos Humanos foi adotada pela Assembleia Geral da Organização das Nações Unidas em 1948.",ans:"C",com:"A DUDH foi proclamada em 10 de dezembro de 1948. É uma declaração: nasceu sem a forma de tratado, embora tenha enorme peso político e moral.",ref:"ONU, Assembleia Geral, Resolução 217 A (III)."},
+{id:"T18",d:"Direitos Humanos",t:"Pacto de São José da Costa Rica",orig:true,ficha:"direitos-humanos-tratados",stmt:"A Convenção Americana sobre Direitos Humanos (Pacto de São José da Costa Rica) foi adotada no âmbito da Organização das Nações Unidas.",ans:"E",com:"A Convenção Americana foi adotada em 1969 no âmbito da Organização dos Estados Americanos (OEA), no sistema regional interamericano. A ONU é o sistema global.",ref:"Convenção Americana sobre Direitos Humanos, 1969."},
+/* História da PRF */
+{id:"T19",d:"História da PRF",t:"Natureza e missão constitucional",orig:true,ficha:"historia-prf-base-legal",stmt:"A Polícia Rodoviária Federal é órgão permanente, organizado e mantido pela União e estruturado em carreira, destinado ao patrulhamento ostensivo das rodovias federais.",ans:"C",com:"É a descrição do texto constitucional. Observe os pontos que a banca costuma trocar: órgão permanente, mantido pela União, estruturado em carreira, patrulhamento ostensivo e rodovias federais.",ref:"CF, art. 144, II e § 2º."},
+{id:"T20",d:"História da PRF",t:"Rodovias e ferrovias federais",orig:true,ficha:"historia-prf-base-legal",stmt:"Compete à Polícia Rodoviária Federal o patrulhamento ostensivo das ferrovias federais.",ans:"E",com:"O patrulhamento ostensivo das ferrovias federais cabe à polícia ferroviária federal, prevista no art. 144, III. A PRF atua nas rodovias federais.",ref:"CF, art. 144, II e III."},
+/* ===== Treino autoral — lote 2 ===== */
+{id:"T21",d:"Português",t:"Crase antes de palavra feminina",orig:true,stmt:"Em “Entreguei o relatório à chefe”, o emprego do acento indicativo de crase está correto.",ans:"C",com:"Quem entrega, entrega a alguém: o verbo pede a preposição “a”. A palavra “chefe” é feminina e aceita o artigo “a”. A junção das duas gera a crase.",ref:"Gramática normativa: crase."},
+{id:"T22",d:"Português",t:"Verbo fazer indicando tempo",orig:true,stmt:"Em “Fazem dois anos que ele saiu”, o verbo fazer está corretamente flexionado.",ans:"E",com:"Fazer indicando tempo decorrido é impessoal e fica no singular: “Faz dois anos que ele saiu”. O plural é erro de concordância.",ref:"Gramática normativa: verbos impessoais."},
+{id:"T23",d:"Raciocínio Lógico-Matemático",t:"Porcentagens sucessivas",orig:true,stmt:"Um produto que custa R$ 200 sofre aumento de 10% e, em seguida, desconto de 10%. Ao final, volta a custar R$ 200.",ans:"E",com:"Após o aumento: 200 × 1,10 = 220. Após o desconto: 220 × 0,90 = 198. Os 10% incidem sobre bases diferentes, então o preço final é R$ 198.",ref:"Matemática básica: porcentagem."},
+{id:"T24",d:"Raciocínio Lógico-Matemático",t:"Contrapositiva",orig:true,stmt:"A proposição “Se chove, então a rua molha” é logicamente equivalente a “Se a rua não molha, então não chove”.",ans:"C",com:"A contrapositiva de P → Q é ¬Q → ¬P e sempre equivale à original. Não confunda com a recíproca (Q → P) nem com a inversa (¬P → ¬Q), que não são equivalentes.",ref:"Lógica proposicional: equivalências."},
+{id:"T25",d:"Informática",t:"Firewall",orig:true,stmt:"O firewall controla o tráfego de rede com base em regras e pode bloquear conexões não autorizadas.",ans:"C",com:"Essa é a função básica do firewall: filtrar entradas e saídas conforme regras definidas. Ele não substitui o antivírus, que atua sobre arquivos e programas maliciosos.",ref:"Segurança da informação: firewall."},
+{id:"T26",d:"Informática",t:"Ransomware e worm",orig:true,stmt:"A principal característica do ransomware é replicar-se automaticamente pelas redes, sem precisar de hospedeiro.",ans:"E",com:"A replicação autônoma pela rede é característica do worm. O ransomware sequestra os dados, em geral por criptografia, e exige pagamento de resgate para liberá-los.",ref:"Segurança da informação: códigos maliciosos."},
+{id:"T27",d:"Física",t:"Energia cinética e velocidade",orig:true,stmt:"Se a velocidade de um veículo dobra, sua energia cinética também dobra.",ans:"E",com:"A energia cinética é Ec = m·v²/2 e depende do quadrado da velocidade. Dobrando v, a energia quadruplica. Por isso a distância de frenagem cresce tanto em alta velocidade.",ref:"Dinâmica: energia cinética."},
+{id:"T28",d:"Física",t:"Cálculo de energia cinética",orig:true,stmt:"Um veículo de 1.000 kg se move a 20 m/s. Qual é a sua energia cinética?",alts:["20 kJ","100 kJ","200 kJ","400 kJ","2.000 kJ"],ans:"C",com:"Ec = m·v²/2 = 1.000 × 20² / 2 = 1.000 × 400 / 2 = 200.000 J, ou seja, 200 kJ.",ref:"Dinâmica: Ec = m·v²/2."},
+{id:"T29",d:"Ética e Cidadania",t:"Elemento ético da conduta",orig:true,ficha:"etica-decreto-1171",stmt:"Segundo o Código de Ética Profissional do Servidor Público Civil do Poder Executivo Federal, o servidor não poderá jamais desprezar o elemento ético de sua conduta.",ans:"C",com:"A ideia está no Capítulo I do Código de Ética: ao decidir entre o honesto e o desonesto, o servidor deve considerar também o que é conveniente e oportuno, sem nunca abandonar o elemento ético.",ref:"Decreto 1.171/1994, Cap. I, seção I."},
+{id:"T30",d:"Geopolítica",t:"Faixa de fronteira",orig:true,ficha:"geopolitica-faixa-fronteira",stmt:"A faixa de fronteira é a faixa interna de 150 km de largura, paralela à linha divisória terrestre do território nacional.",ans:"C",com:"A Constituição fixa a largura em até 150 km e a considera fundamental para a defesa do território. Atenção ao número: a banca costuma trocar 150 por 100 ou 200.",ref:"CF, art. 20, § 2º."},
+{id:"T31",d:"Inglês",t:"False friend: actually",orig:true,stmt:"Em inglês, a palavra “actually” significa “atualmente”.",ans:"E",com:"“Actually” significa “na verdade” ou “de fato”. Para “atualmente”, use “currently” ou “nowadays”. É um falso cognato muito cobrado.",ref:"Vocabulário: false friends."},
+{id:"T32",d:"Espanhol",t:"Falso amigo: embarazada",orig:true,ficha:"espanhol-falsos-amigos",stmt:"En español, la palabra “embarazada” significa “constrangida”.",ans:"E",com:"“Embarazada” significa “grávida”. Para dizer “constrangida”, usa-se “avergonzada” ou “apenada”. Falso amigo clássico entre português e espanhol.",ref:"Vocabulário: falsos amigos."},
+{id:"T33",d:"Trânsito",t:"Velocidade em via de trânsito rápido",orig:true,stmt:"Onde não existir sinalização regulamentadora, a velocidade máxima em vias de trânsito rápido é de 80 km/h.",ans:"C",com:"O CTB fixa 80 km/h nas vias de trânsito rápido, 60 km/h nas arteriais, 40 km/h nas coletoras e 30 km/h nas locais, quando não houver placa. Confira o texto vigente antes da prova.",ref:"CTB, art. 61, § 1º, I e II."},
+{id:"T34",d:"Trânsito",t:"Embriaguez ao volante",orig:true,stmt:"Dirigir sob a influência de álcool é infração gravíssima, com multa multiplicada por dez e suspensão do direito de dirigir.",ans:"C",com:"O art. 165 prevê infração gravíssima, multa (dez vezes) e suspensão do direito de dirigir por 12 meses, além da medida administrativa de retenção do veículo e recolhimento da CNH.",ref:"CTB, art. 165."},
+{id:"T35",d:"Administrativo",t:"Princípios do art. 37",orig:true,ficha:"principios-administracao",stmt:"Legalidade, impessoalidade, moralidade, publicidade e eficiência são princípios expressos no caput do art. 37 da Constituição Federal.",ans:"C",com:"São os cinco princípios do “LIMPE”. Razoabilidade, proporcionalidade e supremacia do interesse público são princípios implícitos ou decorrentes de outras normas.",ref:"CF, art. 37, caput."},
+{id:"T36",d:"Administrativo",t:"Presunção de legitimidade",orig:true,stmt:"A presunção de legitimidade dos atos administrativos é absoluta e não admite prova em contrário.",ans:"E",com:"A presunção de legitimidade é relativa (iuris tantum): vale até que se prove o contrário. Quem questiona o ato tem o ônus de demonstrar o vício.",ref:"Direito Administrativo: atributos do ato."},
+{id:"T37",d:"Constitucional",t:"Mandado de segurança",orig:true,ficha:"constitucional-remedios",stmt:"Conceder-se-á mandado de segurança para proteger direito líquido e certo não amparado por habeas corpus ou habeas data.",ans:"C",com:"É a redação do art. 5º, LXIX. O mandado de segurança é residual: se o direito protegido for de locomoção, cabe habeas corpus; se for acesso ou retificação de informações pessoais, cabe habeas data.",ref:"CF, art. 5º, LXIX."},
+{id:"T38",d:"Penal",t:"Crime impossível",orig:true,ficha:"penal-tentativa",stmt:"Se, por ineficácia absoluta do meio ou por absoluta impropriedade do objeto, é impossível consumar-se o crime, não se pune a tentativa.",ans:"C",com:"É a definição do crime impossível. Se a ineficácia do meio ou a impropriedade do objeto for apenas relativa, a tentativa é punida normalmente.",ref:"CP, art. 17."},
+{id:"T39",d:"Processo Penal",t:"Fiança pela autoridade policial",orig:true,stmt:"A autoridade policial pode conceder fiança nos casos de infração cuja pena privativa de liberdade máxima não seja superior a 4 anos.",ans:"C",com:"Acima desse limite, só o juiz concede a fiança, em até 48 horas. Lembre que alguns crimes são inafiançáveis, como o racismo, a tortura e os hediondos.",ref:"CPP, art. 322."},
+{id:"T40",d:"Legislação Especial",t:"Porte ilegal de arma de uso permitido",orig:true,ficha:"porte-ilegal",stmt:"Portar arma de fogo de uso permitido, sem autorização e em desacordo com determinação legal ou regulamentar, é crime punido com reclusão de 2 a 4 anos e multa.",ans:"C",com:"É o crime do art. 14 do Estatuto do Desarmamento. Diferencie da posse irregular (art. 12), que ocorre dentro de casa ou do local de trabalho e tem pena de detenção de 1 a 3 anos.",ref:"Lei 10.826/2003, art. 14."},
+{id:"T41",d:"Legislação Especial",t:"Usuário de drogas",orig:true,stmt:"Para quem adquire droga para consumo pessoal, a Lei 11.343/2006 prevê pena de reclusão de seis meses a um ano.",ans:"E",com:"O art. 28 prevê apenas advertência, prestação de serviços à comunidade e medida educativa. Não há pena privativa de liberdade para o usuário.",ref:"Lei 11.343/2006, art. 28."},
+{id:"T42",d:"Direitos Humanos",t:"Status dos tratados de direitos humanos",orig:true,ficha:"direitos-humanos-tratados",stmt:"Tratados de direitos humanos aprovados em cada Casa do Congresso, em dois turnos, por três quintos dos votos, têm status de emenda constitucional.",ans:"C",com:"É a regra do art. 5º, § 3º. Os tratados de direitos humanos aprovados sem esse rito têm, segundo o STF, status supralegal: acima das leis e abaixo da Constituição.",ref:"CF, art. 5º, § 3º."}
+,
+/* ===== Treino autoral — lote 3 ===== */
+{id:"T43",d:"Português",t:"Oração adjetiva explicativa",orig:true,stmt:"Em “Os alunos, que estudaram, foram aprovados”, a oração “que estudaram” tem valor explicativo e indica que todos os alunos estudaram.",ans:"C",com:"Entre vírgulas, a oração adjetiva é explicativa e se aplica a todo o grupo. Sem vírgulas (“Os alunos que estudaram foram aprovados”), ela seria restritiva e só alguns alunos seriam aprovados.",ref:"Gramática normativa: orações subordinadas adjetivas."},
+{id:"T44",d:"Português",t:"Mal e mau",orig:true,stmt:"Na frase “Ele é um mal aluno”, o emprego de “mal” está correto.",ans:"E",com:"“Mau” é adjetivo e opõe-se a “bom”: “um mau aluno”. “Mal” é advérbio e opõe-se a “bem”: “Ele estuda mal”. Teste: se couber “bom”, use “mau”.",ref:"Gramática normativa: mal x mau."},
+{id:"T45",d:"Raciocínio Lógico-Matemático",t:"Probabilidade com moeda",orig:true,stmt:"Lançando-se duas vezes uma moeda honesta, a probabilidade de saírem duas caras é de 1/4.",ans:"C",com:"Os lançamentos são independentes: 1/2 × 1/2 = 1/4. Os resultados possíveis são CC, CK, KC e KK, todos igualmente prováveis.",ref:"Probabilidade: eventos independentes."},
+{id:"T46",d:"Raciocínio Lógico-Matemático",t:"Média aritmética",orig:true,stmt:"Se a média aritmética de três números é 10, a soma desses três números é 30.",ans:"C",com:"Média = soma ÷ quantidade. Logo, soma = média × quantidade = 10 × 3 = 30.",ref:"Estatística básica: média aritmética."},
+{id:"T47",d:"Informática",t:"Autenticação em dois fatores",orig:true,stmt:"A autenticação em dois fatores combina dois fatores de categorias diferentes, como algo que o usuário sabe e algo que ele possui.",ans:"C",com:"Exemplo: senha (algo que se sabe) e código no celular (algo que se possui). Duas senhas distintas não formam dois fatores, pois ambas são da mesma categoria.",ref:"Segurança da informação: autenticação."},
+{id:"T48",d:"Informática",t:"HTTPS",orig:true,stmt:"O protocolo HTTPS usa criptografia na comunicação e, por padrão, opera na porta 443.",ans:"C",com:"O HTTPS é o HTTP sobre TLS e usa a porta 443 por padrão. O HTTP simples usa a porta 80 e não criptografa os dados.",ref:"Redes: protocolos e portas."},
+{id:"T49",d:"Física",t:"Massa e peso",orig:true,stmt:"Um corpo de 70 kg na Terra mantém a mesma massa na Lua, mas seu peso é diferente.",ans:"C",com:"A massa é a quantidade de matéria e não muda. O peso é P = m·g e depende da gravidade local, que na Lua é cerca de um sexto da terrestre.",ref:"Dinâmica: massa e peso."},
+{id:"T50",d:"Física",t:"Velocidade média",orig:true,stmt:"Um veículo percorre 180 km em 2 horas. Qual é a sua velocidade média?",alts:["60 km/h","80 km/h","90 km/h","100 km/h","120 km/h"],ans:"C",com:"Velocidade média = distância ÷ tempo = 180 ÷ 2 = 90 km/h.",ref:"Cinemática: vm = Δs/Δt."},
+{id:"T51",d:"Ética e Cidadania",t:"Prazos de classificação",orig:true,stmt:"Pela Lei de Acesso à Informação, o prazo máximo de restrição de acesso a informação ultrassecreta é de 25 anos.",ans:"C",com:"Os prazos máximos são: ultrassecreta, 25 anos; secreta, 15 anos; reservada, 5 anos, contados da produção da informação.",ref:"Lei 12.527/2011, art. 24, § 1º."},
+{id:"T52",d:"Geopolítica",t:"Origem do Mercosul",orig:true,stmt:"O Mercosul foi instituído pelo Tratado de Assunção, de 1991.",ans:"C",com:"O Tratado de Assunção, assinado em 1991 por Argentina, Brasil, Paraguai e Uruguai, criou o bloco. O Protocolo de Ouro Preto, de 1994, deu-lhe a estrutura institucional.",ref:"Integração regional: Mercosul."},
+{id:"T53",d:"Geopolítica",t:"Fronteiras do Brasil",orig:true,stmt:"O Brasil faz fronteira com todos os países da América do Sul, exceto Chile e Equador.",ans:"C",com:"São dez países vizinhos: Uruguai, Argentina, Paraguai, Bolívia, Peru, Colômbia, Venezuela, Guiana, Suriname e Guiana Francesa (território da França).",ref:"Geografia política do Brasil."},
+{id:"T54",d:"Trânsito",t:"Excesso de velocidade acima de 50%",orig:true,stmt:"Transitar em velocidade superior à máxima permitida em mais de 50% é infração gravíssima.",ans:"C",com:"O art. 218, III, prevê infração gravíssima, multa de três vezes o valor da gravíssima, suspensão do direito de dirigir e recolhimento da CNH. Confira o valor vigente.",ref:"CTB, art. 218, III."},
+{id:"T55",d:"Trânsito",t:"Cinto de segurança",orig:true,stmt:"O uso do cinto de segurança é obrigatório para condutor e passageiros em todas as vias do território nacional.",ans:"C",com:"A regra do art. 105, I, é regulamentada pelo Contran. Deixar de usar o cinto é infração grave, com multa e retenção do veículo até a regularização.",ref:"CTB, arts. 105, I, e 167."},
+{id:"T56",d:"Administrativo",t:"Atributos do poder de polícia",orig:true,stmt:"Discricionariedade, autoexecutoriedade e coercibilidade são atributos do poder de polícia.",ans:"C",com:"A discricionariedade admite exceções, pois há atos vinculados. A autoexecutoriedade permite executar o ato sem ordem judicial prévia, e a coercibilidade impõe o ato mesmo contra a vontade do particular.",ref:"Direito Administrativo: poderes da administração."},
+{id:"T57",d:"Administrativo",t:"Validade do concurso",orig:true,stmt:"O prazo de validade do concurso público é de até dois anos, prorrogável uma vez, por igual período.",ans:"C",com:"A Constituição fixa o prazo em até dois anos e permite uma única prorrogação por igual período. Não é possível prorrogar mais de uma vez.",ref:"CF, art. 37, III."},
+{id:"T58",d:"Constitucional",t:"Gratuidade das ações",orig:true,ficha:"constitucional-remedios",stmt:"São gratuitas as ações de habeas corpus e habeas data e, na forma da lei, os atos necessários ao exercício da cidadania.",ans:"C",com:"É a previsão do art. 5º, LXXVII. A gratuidade não alcança o mandado de segurança, que pode ter custas.",ref:"CF, art. 5º, LXXVII."},
+{id:"T59",d:"Constitucional",t:"Pena de morte",orig:true,stmt:"A Constituição Federal veda a pena de morte em qualquer hipótese, sem exceções.",ans:"E",com:"A vedação admite exceção: em caso de guerra declarada, nos termos do art. 84, XIX. Não confunda com as demais penas vedadas, que não têm exceção, como as de caráter perpétuo, de trabalhos forçados, de banimento e as cruéis.",ref:"CF, art. 5º, XLVII, a."},
+{id:"T60",d:"Penal",t:"Legítima defesa",orig:true,stmt:"Quem pratica o fato em legítima defesa age amparado por uma causa de exclusão da ilicitude.",ans:"C",com:"O estado de necessidade, a legítima defesa, o estrito cumprimento do dever legal e o exercício regular de direito excluem a ilicitude.",ref:"CP, art. 23, II."},
+{id:"T61",d:"Penal",t:"Arrependimento posterior",orig:true,stmt:"No arrependimento posterior, reparado o dano ou restituída a coisa até o recebimento da denúncia, em crime sem violência ou grave ameaça, a pena é reduzida de um a dois terços.",ans:"C",com:"Os requisitos são crime sem violência ou grave ameaça, reparação voluntária e prazo até o recebimento da denúncia ou da queixa. Atenção: o arrependimento eficaz (art. 15) é outro instituto.",ref:"CP, art. 16."},
+{id:"T62",d:"Processo Penal",t:"Prazo do inquérito com preso",orig:true,stmt:"Estando o indiciado preso, o inquérito policial deve terminar no prazo de 10 dias, contado do dia da prisão.",ans:"C",com:"Se o indiciado estiver solto, o prazo é de 30 dias, prorrogável. Na Justiça Federal, o prazo com indiciado preso é de 15 dias, prorrogável por mais 15.",ref:"CPP, art. 10; Lei 5.010/1966, art. 66."},
+{id:"T63",d:"Processo Penal",t:"Ação penal pública",orig:true,stmt:"Nos crimes de ação penal pública, a ação é promovida por denúncia do Ministério Público.",ans:"C",com:"A ação penal pública é privativa do Ministério Público. A queixa-crime é o instrumento da ação penal privada, proposta pelo ofendido ou por seu representante legal.",ref:"CF, art. 129, I; CPP, art. 24."},
+{id:"T64",d:"Legislação Especial",t:"Lei Maria da Penha",orig:true,stmt:"As relações pessoais protegidas pela Lei Maria da Penha independem de orientação sexual.",ans:"C",com:"A lei protege a mulher em situação de violência doméstica, familiar ou de relação íntima de afeto, e o parágrafo único do art. 5º afirma que as relações independem de orientação sexual.",ref:"Lei 11.340/2006, art. 5º, parágrafo único."},
+{id:"T65",d:"Legislação Especial",t:"Crime de tortura",orig:true,stmt:"Constranger alguém, com violência ou grave ameaça, causando-lhe sofrimento físico ou mental, para obter confissão, é crime de tortura.",ans:"C",com:"É a hipótese do art. 1º, I, a, da Lei de Tortura, com pena de reclusão de 2 a 8 anos. O crime é inafiançável e insuscetível de graça ou anistia.",ref:"Lei 9.455/1997, art. 1º, I, a."},
+{id:"T66",d:"Direitos Humanos",t:"Racismo na Constituição",orig:true,ficha:"direitos-humanos-tratados",stmt:"A prática do racismo é crime inafiançável e imprescritível, sujeito à pena de reclusão.",ans:"C",com:"A Constituição prevê expressamente a inafiançabilidade e a imprescritibilidade do racismo. A ação de grupos armados contra a ordem constitucional também é imprescritível e inafiançável.",ref:"CF, art. 5º, XLII."},
+{id:"T67",d:"História da PRF",t:"Vinculação institucional",orig:true,ficha:"historia-prf-base-legal",stmt:"A Polícia Rodoviária Federal integra a estrutura do Ministério da Justiça e Segurança Pública.",ans:"C",com:"A PRF é órgão da União vinculado ao Ministério da Justiça e Segurança Pública. Confira a estrutura vigente no regimento do ministério antes da prova.",ref:"CF, art. 144, II; estrutura do MJSP."}
+,
+/* ===== Treino autoral — lote 4 ===== */
+{id:"T68",d:"Português",t:"Por que e porque",orig:true,stmt:"Em “Não sei por que ele saiu”, a grafia “por que” (separado) está correta.",ans:"C",com:"Equivale a “por qual motivo”, em oração interrogativa indireta. Usa-se “porque” junto para explicar (“Saiu porque quis”), “por quê” no fim de frase e “porquê” como substantivo.",ref:"Gramática normativa: por que, porque, por quê e porquê."},
+{id:"T69",d:"Português",t:"Vírgula entre sujeito e verbo",orig:true,stmt:"Em regra, não se separa o sujeito do verbo por vírgula.",ans:"C",com:"Sujeito e predicado formam o núcleo da oração e não se separam por vírgula. Só há exceção quando entre eles houver um termo intercalado, como um aposto ou uma oração explicativa.",ref:"Gramática normativa: pontuação."},
+{id:"T70",d:"Raciocínio Lógico-Matemático",t:"Grandezas inversamente proporcionais",orig:true,stmt:"Se 3 máquinas iguais fazem um serviço em 6 horas, 6 máquinas iguais fazem o mesmo serviço em 3 horas.",ans:"C",com:"Mais máquinas, menos tempo: grandezas inversamente proporcionais. 3 × 6 = 18 e 6 × 3 = 18, o produto se mantém.",ref:"Matemática básica: regra de três inversa."},
+{id:"T71",d:"Raciocínio Lógico-Matemático",t:"Sequência numérica",orig:true,stmt:"Na sequência 2, 4, 8, 16, …, qual é o próximo termo?",alts:["20","24","30","32","36"],ans:"D",com:"Cada termo é o dobro do anterior (progressão geométrica de razão 2). O próximo é 16 × 2 = 32.",ref:"Sequências: progressão geométrica."},
+{id:"T72",d:"Informática",t:"Cookies",orig:true,stmt:"Cookies são pequenos arquivos que armazenam no computador do usuário informações sobre a sua navegação.",ans:"C",com:"Os sites gravam cookies no navegador para lembrar preferências, sessões e itens de carrinho. Também podem ser usados para rastreamento, o que levanta questões de privacidade.",ref:"Navegadores e privacidade."},
+{id:"T73",d:"Informática",t:"Local do backup",orig:true,stmt:"Para facilitar a restauração, a boa prática é guardar a cópia de segurança sempre no mesmo local dos dados originais.",ans:"E",com:"Se o local sofrer incêndio, roubo ou falha, original e cópia se perdem juntos. A boa prática é manter cópias em local distinto, inclusive fora do ambiente de origem.",ref:"Segurança da informação: backup."},
+{id:"T74",d:"Física",t:"Segunda lei de Newton",orig:true,stmt:"A força resultante sobre um corpo é igual ao produto de sua massa pela aceleração que ele adquire.",ans:"C",com:"É a segunda lei de Newton: F = m·a. A aceleração tem a mesma direção e o mesmo sentido da força resultante.",ref:"Dinâmica: leis de Newton."},
+{id:"T75",d:"Física",t:"Primeira lei de Newton",orig:true,stmt:"Um corpo em movimento retilíneo uniforme precisa de uma força resultante para manter a sua velocidade.",ans:"E",com:"Pela inércia, um corpo mantém o MRU quando a força resultante é nula. A força resultante só é necessária para alterar a velocidade.",ref:"Dinâmica: princípio da inércia."},
+{id:"T76",d:"Ética e Cidadania",t:"Transparência como regra",orig:true,stmt:"Na Lei de Acesso à Informação, a publicidade é a regra e o sigilo é a exceção.",ans:"C",com:"É a diretriz do art. 3º, I. O acesso é a regra, e as restrições dependem de hipóteses legais, como informações classificadas e dados pessoais.",ref:"Lei 12.527/2011, art. 3º, I."},
+{id:"T77",d:"Geopolítica",t:"Amazônia Legal",orig:true,stmt:"A Amazônia Legal inclui estados da Região Norte e partes do Maranhão e do Mato Grosso.",ans:"C",com:"É uma divisão política e administrativa, não um bioma. Abrange os estados da Região Norte, o Mato Grosso e a parte do Maranhão a oeste do meridiano 44º.",ref:"Geografia do Brasil: Amazônia Legal."},
+{id:"T78",d:"Geopolítica",t:"Origem da OTAN",orig:true,stmt:"A Organização do Tratado do Atlântico Norte (OTAN) foi criada em 1949, como aliança de defesa coletiva.",ans:"C",com:"O Tratado de Washington, de 1949, criou a aliança. O princípio central é o da defesa coletiva: um ataque a um membro é considerado ataque a todos.",ref:"Geopolítica: organizações de defesa."},
+{id:"T79",d:"Trânsito",t:"Omissão de socorro",orig:true,stmt:"Constitui crime previsto no CTB deixar o condutor envolvido em acidente de prestar imediato socorro à vítima.",ans:"C",com:"É o art. 304 do CTB. Mesmo que a falta de socorro seja suprida por terceiros, a omissão do condutor envolvido em acidente configura o crime.",ref:"CTB, art. 304."},
+{id:"T80",d:"Trânsito",t:"Validade da CNH",orig:true,stmt:"A CNH tem validade de dez anos para condutores com menos de cinquenta anos de idade.",ans:"C",com:"A validade é de 10 anos para menores de 50, 5 anos entre 50 e 69 e 3 anos a partir de 70. Confira o texto vigente do CTB antes da prova.",ref:"CTB, art. 147, § 2º."},
+{id:"T81",d:"Administrativo",t:"Anulação e revogação",orig:true,stmt:"A Administração pode anular seus próprios atos quando ilegais e revogá-los por motivo de conveniência ou oportunidade.",ans:"C",com:"É o princípio da autotutela, consolidado na Súmula 473 do STF. A anulação trata de ilegalidade e tem efeitos retroativos. A revogação trata de mérito e tem efeitos para frente.",ref:"STF, Súmula 473."},
+{id:"T82",d:"Administrativo",t:"Responsabilidade civil do Estado",orig:true,stmt:"As pessoas jurídicas de direito público respondem pelos danos que seus agentes causarem a terceiros, e essa responsabilidade, como regra, é objetiva.",ans:"C",com:"Na responsabilidade objetiva, basta provar a conduta, o dano e o nexo causal, sem necessidade de provar culpa. Contra o agente, o Estado tem direito de regresso se houver dolo ou culpa.",ref:"CF, art. 37, § 6º."},
+{id:"T83",d:"Constitucional",t:"Cláusulas pétreas",orig:true,stmt:"Pode ser objeto de deliberação a proposta de emenda constitucional tendente a abolir a forma federativa de Estado.",ans:"E",com:"A forma federativa de Estado é cláusula pétrea. Também são o voto direto, secreto, universal e periódico, a separação dos Poderes e os direitos e garantias individuais.",ref:"CF, art. 60, § 4º."},
+{id:"T84",d:"Penal",t:"Inimputabilidade do menor",orig:true,stmt:"Os menores de dezoito anos são penalmente inimputáveis e ficam sujeitos às normas da legislação especial.",ans:"C",com:"Adota-se o critério biológico: a idade de 18 anos. A legislação especial é o Estatuto da Criança e do Adolescente, que prevê medidas socioeducativas.",ref:"CP, art. 27; CF, art. 228."},
+{id:"T85",d:"Processo Penal",t:"Natureza do inquérito",orig:true,stmt:"O inquérito policial é indispensável ao oferecimento da denúncia.",ans:"E",com:"É peça informativa e dispensável: se o titular da ação penal já tem elementos suficientes de autoria e materialidade, pode denunciar sem inquérito.",ref:"CPP, art. 12 e art. 39, § 5º."},
+{id:"T86",d:"Legislação Especial",t:"Disparo de arma de fogo",orig:true,stmt:"Disparar arma de fogo em lugar habitado ou em suas adjacências é crime, desde que o fato não tenha como finalidade a prática de outro crime.",ans:"C",com:"É o art. 15 do Estatuto do Desarmamento, com reclusão de 2 a 4 anos e multa. Se o disparo visa outro crime, ele é absorvido por este.",ref:"Lei 10.826/2003, art. 15."},
+{id:"T87",d:"Direitos Humanos",t:"Dignidade da pessoa humana",orig:true,stmt:"A dignidade da pessoa humana é um dos fundamentos da República Federativa do Brasil.",ans:"C",com:"Está no art. 1º, III, ao lado da soberania, da cidadania, dos valores sociais do trabalho e da livre iniciativa e do pluralismo político.",ref:"CF, art. 1º, III."},
+{id:"T88",d:"História da PRF",t:"Decreto 1.655/1995",orig:true,ficha:"historia-prf-base-legal",stmt:"O Decreto nº 1.655, de 1995, define as competências da Polícia Rodoviária Federal.",ans:"C",com:"O decreto regulamenta as competências da PRF. A base constitucional está no art. 144, II, e § 2º, e o decreto detalha as atribuições.",ref:"Decreto 1.655/1995."},
+{id:"T89",d:"História da PRF",t:"Data comemorativa",orig:true,ficha:"historia-prf-base-legal",stmt:"A data comemorativa da Polícia Rodoviária Federal é 24 de julho, em lembrança à sua origem em 1928, no governo de Washington Luís.",ans:"C",com:"A origem é a criação da polícia de estradas, em 1928. A Constituição de 1988 incluiu a PRF entre os órgãos de segurança pública.",ref:"Histórico institucional da PRF."}
+
+];
+var CAD_ORDER=CAD_DISC.map(function(n){return n});
+QS.sort(function(a,b){return CAD_ORDER.indexOf(a.d)-CAD_ORDER.indexOf(b.d)});
+S.cad=S.cad||{};S.cadMode=S.cadMode||"estudar";
+var cadView="indice",cadDisc="",cadSim=null;
+function curList(){return cadSim?cadSim.map(function(id){return QS.filter(function(q){return q.id===id})[0]}).filter(Boolean):cadDisc?QS.filter(function(q){return q.d===cadDisc}):QS}
+function cadAns(q){return q.alts?q.ans:(q.ans==="C"?"CERTO":"ERRADO")}
+function cadLabel(q){return q.alts?"ALTERNATIVA "+q.ans:(q.ans==="C"?"CERTO":"ERRADO")}
+function cadCls(q){return q.alts?"mc":(q.ans==="C"?"ok":"err")}
+function cadStats(list){var f=0,a=0;list.forEach(function(q){var s=S.cad[q.id];if(s){f++;if(s.ok)a++}});return{f:f,a:a}}
+function ficIdx(id){for(var i=0;i<FICHAS.length;i++)if(FICHAS[i].src.indexOf("/"+id+".")>-1)return i;return -1}
+
+function qCard(q){
+  var st=S.cad[q.id],open=!!st||S.cadMode==="revisar",mc=!!q.alts,L="ABCDE",h="";
+  h+='<article class="qc" id="q'+q.id+'"><div class="qh"><span class="n">'+esc(q.id)+'</span><h3>'+esc(q.t)+'</h3>'+(q.orig?'<span class="tag">Treino autoral</span>':'')+'</div>';
+  if(q.src)h+='<div class="qm">'+esc(q.src)+'</div>';
+  if(q.apoio)h+='<div class="qa">'+esc(q.apoio)+'</div>';
+  if(q.ctx)h+='<div class="qx">'+esc(q.ctx)+'</div>';
+  h+='<div class="qs'+(mc?'':' ce')+'">'+esc(q.stmt)+'</div>';
+  if(mc){
+    h+='<div class="alts">'+q.alts.map(function(t,i){
+      var c="alt";if(open){if(L[i]===q.ans)c+=" right";else if(st&&st.r===L[i])c+=" wrong"}else if(st&&st.r===L[i])c+=" sel";
+      return '<button type="button" class="'+c+'" data-qa="'+q.id+'" data-v="'+L[i]+'"'+(open?' disabled':'')+'><b>'+L[i]+'</b><span>'+esc(t)+'</span></button>'}).join("")+'</div>';
+  }else{
+    h+='<div class="ceBtns">'+[["C","Certo"],["E","Errado"]].map(function(x){
+      var c="";if(open){if(x[0]===q.ans)c="right";else if(st&&st.r===x[0])c="wrong"}
+      return '<button type="button" class="'+c+'" data-qa="'+q.id+'" data-v="'+x[0]+'"'+(open?' disabled':'')+'>'+x[1]+'</button>'}).join("")+'</div>';
+  }
+  if(open){
+    h+='<div class="qr"><span class="pillc '+cadCls(q)+'">'+cadLabel(q)+'</span><span class="lbl">Comentário</span>'+(st?'<span class="res '+(st.ok?'ok':'err')+'">'+(st.ok?'Você acertou':'Você marcou '+(mc?st.r:(st.r==="C"?"Certo":"Errado")))+'</span>':'')+'</div>';
+    h+='<p class="qcom">'+esc(q.com)+'</p><div class="qref">'+esc(q.ref)+'</div>';
+  }else h+='<div class="qhint">Marque sua resposta para ver o gabarito e o comentário.</div>';
+  var fi=q.ficha?ficIdx(q.ficha):-1;
+  h+='<div class="qf">'+(q.orig?'<span>Treino autoral</span>':'<span>Prova oficial</span><span>Gabarito definitivo</span>')+(fi>-1?'<button type="button" data-open="'+fi+'">Ver ficha relacionada</button>':'')+'<span class="r">'+(mc?'Múltipla escolha':'Certo / Errado')+'</span></div></article>';
+  return h;
+}
+
+var cadClr=false,cadTm;
+function renderCad(){
+  var el=$("cad");if(!el)return;
+  var list=curList(),all=cadStats(QS),h="";
+  var title,sub;
+  if(cadView==="indice"){title="Escolha sua próxima revisão.";sub="Índice clicável"}
+  else if(cadView==="gabarito"){title="Gabarito consolidado";sub="Todas as questões deste caderno"}
+  else{title=cadSim?"Simulado":cadDisc||"Todas as questões";sub=cadSim?list.length+" questões sorteadas":"Questões comentadas"}
+  h+='<div class="cadHead"><div class="cadTop"><b>Revisão de Concursos</b><span>PRF / '+QS.length+' questões</span></div><h2>'+esc(title)+'</h2><div class="cadSub">'+sub+'</div></div>';
+  h+='<div class="cadNav">'+[["indice","Índice"],["questoes","Questões"],["gabarito","Gabarito"]].map(function(x){return '<button type="button" data-cv="'+x[0]+'" aria-pressed="'+(cadView===x[0])+'">'+x[1]+'</button>'}).join("")+
+     '<span class="sp"></span><button type="button" data-cm="'+(S.cadMode==="estudar"?"revisar":"estudar")+'" aria-pressed="false">'+(S.cadMode==="estudar"?"Mostrar gabaritos":"Voltar a estudar")+'</button><span class="prog num">'+all.f+' feitas · '+all.a+(all.a===1?' acerto':' acertos')+'</span></div>';
+  h+='<div class="cadBody">';
+  if(cadView==="indice"){
+    var n=0;
+    h+='<div class="cadRows"><button type="button" class="cadRow" data-cd=""><i>—</i><b>Todas as disciplinas</b><small>'+all.f+' de '+QS.length+' feitas</small><em>'+QS.length+'</em></button>';
+    CAD_DISC.forEach(function(d){var l=QS.filter(function(q){return q.d===d}),s=cadStats(l);n++;
+      h+=l.length?'<button type="button" class="cadRow" data-cd="'+esc(d)+'"><i>'+String(n).padStart(2,"0")+'</i><b>'+esc(d)+'</b><small>'+s.f+' de '+l.length+' feitas</small><em>'+l.length+'</em></button>'
+                 :'<div class="cadRow off"><i>'+String(n).padStart(2,"0")+'</i><b>'+esc(d)+'</b><small>sem questões neste caderno</small><em>—</em></div>'});
+    h+='</div><p class="cadNote">Este caderno em HTML reúne '+QS.filter(function(q){return !q.orig}).length+' questões transcritas do caderno em PDF, com órgão, cargo e data da prova, e '+QS.filter(function(q){return q.orig}).length+' questões de treino autorais, marcadas como tal e sem vínculo com prova. As 500 questões completas continuam no PDF. Seus resultados ficam só neste navegador.</p>';
+  }else if(cadView==="gabarito"){
+    h+='<div class="gab">'+QS.map(function(q){var s=S.cad[q.id];return '<div class="gb"><b class="n">'+esc(q.id)+'</b><span>'+esc(q.t)+'<br><small>'+esc(q.d)+(q.orig?' · treino autoral':'')+'</small></span><span class="a '+cadCls(q)+'">'+cadLabel(q)+'</span><span class="s '+(s?(s.ok?'ok':'err'):'')+'">'+(s?(s.ok?'✓':'✗'):'–')+'</span></div>'}).join("")+'</div>'+
+       '<p class="cadNote">✓ acertou · ✗ errou · – ainda não respondida.</p>';
+  }else{
+    var chips='<div class="cadChips">'+[""].concat(CAD_DISC.filter(function(d){return QS.some(function(q){return q.d===d})})).map(function(d){var n=d?QS.filter(function(q){return q.d===d}).length:QS.length;return '<button type="button" class="cc" data-cd="'+esc(d)+'" aria-pressed="'+(cadDisc===d)+'">'+(d||"Todas")+'<small>'+n+'</small></button>'}).join("")+'</div>';
+    h+='<button type="button" class="btn cadBack" data-cv="indice">← Índice</button>'+chips+list.map(qCard).join("");
+    var s2=cadStats(list);
+    h+='<p class="cadNote">'+s2.f+' de '+list.length+' respondidas · '+s2.a+(s2.a===1?' acerto':' acertos')+'. <button type="button" class="sm" data-cclear="1">'+(cadClr?'Confirmar: refazer':'Refazer estas questões')+'</button></p>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+$("cad").addEventListener("click",function(e){
+  var t;
+  if(t=e.target.closest("[data-cv]")){cadView=t.dataset.cv;if(cadView==="indice")cadSim=null;if(cadView!=="questoes")cadClr=false;renderCad();$("caderno").scrollIntoView({block:"start"});window.scrollTo(0,0);return}
+  if(t=e.target.closest("[data-cd]")){cadDisc=t.dataset.cd;cadSim=null;cadView="questoes";renderCad();window.scrollTo(0,0);return}
+  if(t=e.target.closest("[data-cm]")){S.cadMode=t.dataset.cm;save();renderCad();return}
+  if(t=e.target.closest("[data-qa]")){
+    var q=QS.filter(function(x){return x.id===t.dataset.qa})[0];if(!q||S.cad[q.id])return;
+    S.cad[q.id]={r:t.dataset.v,ok:t.dataset.v===q.ans};save();
+    var y=window.scrollY;renderCad();window.scrollTo(0,y);
+    var c=document.getElementById("q"+q.id);if(c&&c.getBoundingClientRect().bottom>innerHeight)c.scrollIntoView({block:"nearest",behavior:"smooth"});return}
+  if(t=e.target.closest("[data-cclear]")){
+    if(!cadClr){cadClr=true;cadTm=setTimeout(function(){cadClr=false;renderCad()},4000);renderCad();return}
+    clearTimeout(cadTm);cadClr=false;
+    curList().forEach(function(q){delete S.cad[q.id]});save();renderCad();window.scrollTo(0,0)}
+});
+
+/* materiais */
+function btn(u,l,p){return u?'<a class="btn'+(p?" primary":"")+'" href="'+esc(u)+'" target="_blank" rel="noopener">'+l+' →</a>':'<span class="btn off">Link em breve</span>'}
+$("mats").innerHTML=
+ '<article class="card mat main"><span class="kicker">Coleção principal</span><h3>Fichas ilustradas</h3><ul><li>1.811 fichas em 16 disciplinas</li><li>Cada disciplina com a sua capa</li><li>Inglês e Espanhol em volumes separados</li></ul>'+btn(LINKS.principal,"Abrir coleção",true)+'</article>'+
+ '<article class="card mat"><span class="pill">Bônus 1</span><h3>500 questões comentadas</h3><ul><li>Questões reais do Cebraspe, 2024 a 2026</li><li>Gabarito definitivo e comentário</li><li>15 disciplinas e revisão de História da PRF</li><li>Caderno em HTML: '+QS.length+' questões para treinar aqui</li></ul><div class="field"><button type="button" class="btn primary" data-go="caderno">Treinar em HTML →</button>'+btn(LINKS.questoes,"Abrir PDF",false)+'</div></article>'+
+ '<article class="card mat"><span class="pill">Bônus 2</span><h3>Guia de Revisão PRF</h3><ul><li>400 páginas e 366 resumos por assunto</li><li>Conceitos, regras e pontos de atenção</li><li>16 disciplinas</li></ul>'+btn(LINKS.guia,"Abrir guia",false)+'</article>';
+var galF="Todas";
+function renderGal(){
+  var ds=["Todas"].concat(DISC.map(function(d){return d[0]}).filter(function(n){return FICHAS.some(function(f){return f.d===n})}));
+  $("galTabs").innerHTML=ds.map(function(n){return '<button class="chip" data-gf="'+esc(n)+'" aria-pressed="'+(galF===n)+'">'+n+'</button>'}).join("");
+  var L=FICHAS.filter(function(f){return galF==="Todas"||f.d===galF});
+  $("gal").innerHTML=L.map(function(f){return '<button class="fcard" data-open="'+FICHAS.indexOf(f)+'">'+fimg(f,"Ficha: "+esc(f.t))+'<span><b>'+esc(f.t)+'</b><small>'+f.d+'</small></span></button>'}).join("");
+}
+$("galTabs").addEventListener("click",function(e){var b=e.target.closest("[data-gf]");if(!b)return;galF=b.dataset.gf.replace(/&amp;/g,"&");renderGal()});
+
+/* visualizador de fichas */
+var cur=-1,lb=$("lb");
+function openF(i){cur=(i+FICHAS.length)%FICHAS.length;var f=FICHAS[cur];lbShow(f);$("lbT").textContent=f.t;$("lbD").textContent=f.d+" · "+(cur+1)+" de "+FICHAS.length;lb.classList.add("on");$("lbX").focus()}
+function closeF(){lb.classList.remove("on");$("lbImg").removeAttribute("src")}
+document.addEventListener("click",function(e){var o=e.target.closest("[data-open]");if(o)openF(parseInt(o.dataset.open,10))});
+$("lbX").addEventListener("click",closeF);$("lbP").addEventListener("click",function(){openF(cur-1)});$("lbN").addEventListener("click",function(){openF(cur+1)});
+lb.addEventListener("click",function(e){if(e.target===lb||e.target.classList.contains("pic"))closeF()});
+document.addEventListener("keydown",function(e){if(!lb.classList.contains("on"))return;if(e.key==="Escape")closeF();if(e.key==="ArrowLeft")openF(cur-1);if(e.key==="ArrowRight")openF(cur+1)});
+
+/* apagar progresso, com confirmação na própria página */
+var rb=$("resetBtn"),armed=false,tm;
+rb.addEventListener("click",function(){
+  if(!armed){armed=true;rb.textContent="Confirmar: apagar tudo";rb.className="danger";tm=setTimeout(function(){armed=false;rb.textContent="Apagar meu progresso";rb.className=""},4000);return}
+  clearTimeout(tm);armed=false;rb.textContent="Apagar meu progresso";rb.className="";
+  S={exam:"",goal:20,disc:{},q:{f:0,a:0,h:[]},g:0,log:{},last:"",cad:{},cadMode:"estudar"};save();renderAll();
+});
+
+/* tema */
+var root=document.documentElement,tb=$("themeBtn");
+function isDark(){var t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme:dark)").matches}
+function paint(){tb.textContent=isDark()?"☼":"☾"}
+try{var th=localStorage.getItem("prf-theme");if(th)root.setAttribute("data-theme",th)}catch(e){}
+tb.addEventListener("click",function(){var n=isDark()?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("prf-theme",n)}catch(e){}paint()});
+
+/* busca geral: fichas, disciplinas e questões */
+var gs=$("gs"),gsOut=$("gsOut");
+function gsRun(){
+  var t=norm(gs.value.trim());
+  if(t.length<2){gsOut.hidden=true;gsOut.innerHTML="";return}
+  var r=[];
+  FICHAS.forEach(function(f,i){if(norm(f.t+" "+f.d).indexOf(t)>-1)r.push(["Ficha",f.t,f.d,'data-open="'+i+'"'])});
+  DISC.forEach(function(d){if(norm(d[0]).indexOf(t)>-1)r.push(["Disciplina",d[0],d[1]+" fichas",'data-focus="'+esc(d[0])+'"'])});
+  QS.forEach(function(q){if(norm(q.t+" "+q.d+" "+q.stmt).indexOf(t)>-1)r.push(["Questão",q.id+" · "+q.t,q.d,'data-gq="'+q.id+'"'])});
+  gsOut.hidden=false;
+  gsOut.innerHTML=r.length?r.slice(0,12).map(function(x){return '<button type="button" class="gsr" '+x[3]+'><i>'+x[0]+'</i><b>'+esc(x[1])+'</b><small>'+esc(x[2])+'</small></button>'}).join("")+(r.length>12?'<p class="muted gsm">Mais '+(r.length-12)+' resultados. Refine a busca.</p>':""):'<p class="muted gsm">Nada encontrado. Tente outra palavra.</p>';
+}
+gs.addEventListener("input",gsRun);
+document.addEventListener("click",function(e){
+  var g=e.target.closest("[data-gq]");
+  if(!g){if(!e.target.closest(".gsWrap")){gsOut.hidden=true}return}
+  var q0=QS.filter(function(x){return x.id===g.dataset.gq})[0];if(!q0)return;
+  cadDisc=q0.d;cadView="questoes";renderCad();show("caderno");
+  setTimeout(function(){var c=document.getElementById("q"+q0.id);if(c)c.scrollIntoView({block:"start"})},40);
+});
+$("sBtn").addEventListener("click",function(){show("inicio");gs.focus();gs.scrollIntoView({block:"center"})});
+document.addEventListener("keydown",function(e){if(e.key==="/"&&!/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||"")){e.preventDefault();show("inicio");gs.focus()}});
+
+/* painel de treino: desempenho por disciplina e simulado */
+function renderPanel(){
+  S.sim=S.sim||{d:"",n:10,m:"novas"};var sm=S.sim;
+  var st=cadStats(QS),pct=st.f?Math.round(st.a/st.f*100):0,ds=CAD_DISC.filter(function(d){return QS.some(function(q){return q.d===d})});
+  var rows=ds.map(function(d){var l=QS.filter(function(q){return q.d===d}),s=cadStats(l),ac=s.f?s.a/s.f:0,cl=!s.f?"":ac>=.7?"g":ac<.5?"r":"";
+    return '<button type="button" class="pr" data-cdgo="'+esc(d)+'"><b>'+esc(d)+'</b><em class="num">'+(s.f?s.a+" acertos em "+s.f+" · ":"")+s.f+" de "+l.length+'</em><div class="bar"><i class="'+cl+'" style="width:'+(s.f/l.length*100)+'%"></i></div></button>'}).join("");
+  var opt=function(v,t,cur){return '<option value="'+esc(v)+'"'+(String(cur)===String(v)?" selected":"")+'>'+esc(t)+'</option>'};
+  $("tPanel").innerHTML='<div class="tstats"><div class="ts"><b class="num">'+st.f+'<small style="font-size:15px;color:var(--muted)"> / '+QS.length+'</small></b><span>Respondidas</span></div><div class="ts"><b class="num">'+st.a+'</b><span>Acertos</span></div><div class="ts"><b class="num">'+(st.f-st.a)+'</b><span>Erros</span></div><div class="ts"><b class="num">'+pct+'%</b><span>Aproveitamento</span></div></div>'+
+  '<div class="tgrid"><div class="card"><div class="kicker">Por disciplina</div><h3 style="font-size:22px;margin:6px 0 8px">Onde você está</h3>'+(rows||"")+'<p class="muted" style="font-size:12.5px;margin-top:10px">Verde: 70% ou mais de acertos. Vermelho: abaixo de 50%. Toque para treinar a disciplina.</p></div>'+
+  '<div class="card sim"><div class="kicker">Simulado rápido</div><h3 style="font-size:22px">Monte o seu treino</h3>'+
+  '<label>Disciplina<select id="simD">'+opt("","Todas",sm.d)+ds.map(function(d){return opt(d,d,sm.d)}).join("")+'</select></label>'+
+  '<label>Quantidade<select id="simN">'+[5,10,20].map(function(n){return opt(n,n+" questões",sm.n)}).join("")+'</select></label>'+
+  '<label>Quais questões<select id="simM">'+opt("novas","Ainda não feitas",sm.m)+opt("erradas","As que eu errei (refazer)",sm.m)+opt("todas","Qualquer uma (refazer)",sm.m)+'</select></label>'+
+  '<button type="button" class="btn primary" id="simGo">Começar simulado →</button><div class="msg" id="simMsg"></div></div></div>';
+}
+$("tPanel").addEventListener("change",function(e){var t=e.target;S.sim=S.sim||{d:"",n:10,m:"novas"};if(t.id==="simD")S.sim.d=t.value;if(t.id==="simN")S.sim.n=parseInt(t.value,10);if(t.id==="simM")S.sim.m=t.value;save()});
+$("tPanel").addEventListener("click",function(e){
+  var g=e.target.closest("[data-cdgo]");if(g){cadDisc=g.dataset.cdgo;cadSim=null;cadView="questoes";renderCad();show("caderno");return}
+  if(!e.target.closest("#simGo"))return;
+  var sm=S.sim||{d:"",n:10,m:"novas"};
+  var pool=QS.filter(function(q){var a=S.cad[q.id];return(!sm.d||q.d===sm.d)&&(sm.m==="todas"||(sm.m==="novas"?!a:(a&&!a.ok)))});
+  if(!pool.length){$("simMsg").textContent="Nenhuma questão neste filtro. Mude a disciplina ou o tipo.";return}
+  for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),x=pool[i];pool[i]=pool[j];pool[j]=x}
+  var pick=pool.slice(0,sm.n);
+  pick.forEach(function(q){delete S.cad[q.id]});
+  cadSim=pick.map(function(q){return q.id});cadDisc="";cadView="questoes";S.cadMode="estudar";save();renderCad();show("caderno");
+});
+function renderAll(){renderPanel();renderCad();renderGal();renderChips();renderDisc();renderHome();renderTreino();paint()}
+renderAll();
+show((location.hash||"").slice(1),true);
+</script>
+
+</body></html>

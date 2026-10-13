@@ -1,0 +1,47 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Embutir imagens no site</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;background:#f6f2e9;color:#20332c;margin:0;padding:24px}
+main{max-width:680px;margin:auto}
+h1{font:700 28px Georgia,serif;margin:0 0 6px}
+.box{background:#fffdf8;border:1px solid #e4dfd2;border-radius:18px;padding:18px 20px;margin:16px 0}
+.box b{display:block;margin-bottom:6px}
+button{border:0;border-radius:999px;background:#174638;color:#f6f2e9;font:700 16px system-ui;padding:12px 24px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+#log{white-space:pre-wrap;font:14px/1.5 ui-monospace,monospace;background:#fffdf8;border:1px dashed #e4dfd2;border-radius:14px;padding:14px;min-height:60px}
+.ok{color:#2f7a55}.err{color:#a84545}
+</style></head><body><main>
+<h1>Embutir as imagens no site</h1>
+<p>Esta página junta o <b>index.html</b> e as imagens das fichas em um arquivo só. Tudo acontece no seu computador, nada é enviado para a internet.</p>
+<div class="box"><b>1. Escolha o index.html do site</b><input type="file" id="fh" accept=".html"></div>
+<div class="box"><b>2. Escolha todas as imagens da pasta fichas</b><input type="file" id="fi" multiple accept="image/*"><small style="display:block;margin-top:6px">Dica: abra a pasta, aperte Ctrl+A para selecionar tudo.</small></div>
+<button id="go" disabled>3. Gerar o arquivo</button>
+<div class="box"><b>Resultado</b><div id="log">Aguardando os arquivos.</div></div>
+<script>
+function norm(n){return n.replace(/\.[^.]+$/,"").toLowerCase().trim()}
+function montar(html,imgs){
+  if(html.indexOf("var IMGDATA={};")<0)return{erro:"Este index.html não tem o marcador IMGDATA. Use o index.html mais recente do pacote."};
+  var blk=html.split("var FICHAS=[")[1];if(!blk)return{erro:"Não achei a lista de fichas neste index.html."};
+  var ids=[],re=/\["([a-z0-9-]+)","/g,m;blk=blk.split("].map")[0];while(m=re.exec(blk))ids.push(m[1]);
+  var data={},sobra=[];
+  imgs.forEach(function(i){var k=norm(i.name);if(ids.indexOf(k)>-1)data[k]=i.url;else sobra.push(i.name)});
+  var achadas=Object.keys(data),falta=ids.filter(function(i){return!data[i]});
+  return{out:html.replace("var IMGDATA={};","var IMGDATA="+JSON.stringify(data)+";"),achadas:achadas.length,total:ids.length,falta:falta,sobra:sobra};
+}
+function lerTexto(f){return new Promise(function(r){var x=new FileReader();x.onload=function(){r(x.result)};x.readAsText(f)})}
+function lerUrl(f){return new Promise(function(r){var x=new FileReader();x.onload=function(){r({name:f.name,url:x.result})};x.readAsDataURL(f)})}
+var fh=document.getElementById("fh"),fi=document.getElementById("fi"),go=document.getElementById("go"),log=document.getElementById("log");
+function chk(){go.disabled=!(fh.files.length&&fi.files.length)}
+fh.onchange=fi.onchange=chk;
+go.onclick=async function(){
+  go.disabled=true;log.textContent="Lendo os arquivos…";
+  var html=await lerTexto(fh.files[0]),imgs=await Promise.all([].slice.call(fi.files).map(lerUrl)),r=montar(html,imgs);
+  if(r.erro){log.innerHTML='<span class="err">'+r.erro+'</span>';go.disabled=false;return}
+  var mb=(r.out.length/1048576).toFixed(1),t='<span class="'+(r.falta.length?"err":"ok")+'">Imagens encontradas: '+r.achadas+' de '+r.total+'</span>\nTamanho do arquivo: '+mb+' MB';
+  if(r.falta.length)t+='\n\nFaltaram estas fichas (confira os nomes dos arquivos):\n  '+r.falta.join('.webp\n  ')+'.webp';
+  if(r.sobra.length)t+='\n\nArquivos que não correspondem a nenhuma ficha:\n  '+r.sobra.join('\n  ');
+  log.innerHTML=t+'\n\nO download do index.html novo começou. Coloque ele no GitHub no lugar do antigo.';
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([r.out],{type:"text/html"}));a.download="index.html";document.body.appendChild(a);a.click();a.remove();
+  go.disabled=false;
+};
+</script></main></body></html>
